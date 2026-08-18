@@ -8,19 +8,25 @@
 // Everything renders from the collections via useConversation.
 import { createFileRoute } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Avatar } from '../../components/Avatar'
 import { Composer } from '../../components/chat/Composer'
+import type { ReplyTarget } from '../../components/chat/Composer'
+import { MarkReadSentinel } from '../../components/chat/MarkReadSentinel'
 import { ConversationTopBar } from '../../components/chat/ConversationTopBar'
 import { GroupTile } from '../../components/chat/GroupTile'
 import { MessageList } from '../../components/chat/MessageList'
 import { MembersPanel } from '../../components/desktop/MembersPanel'
+import { AnnouncementComposer } from '../../components/channel/AnnouncementComposer'
 import { AnnouncementFeed } from '../../components/channel/AnnouncementFeed'
 import { ChannelTopbar } from '../../components/channel/ChannelTopbar'
 import { useIsDesktop } from '../../hooks/useIsDesktop'
 import { useConversation } from '../../hooks/useConversation'
 import { locationsCollection } from '../../db/collections'
 import { conversationTitle } from '../../db/derive'
+import type { Message } from '../../db/schema'
+import { addReaction } from '../../db/mutations'
 import { onlineMemberIds } from '../../db/presence'
 import { session } from '../../db/session'
 import '../../styles/conversation.css'
@@ -78,16 +84,24 @@ function ChannelScreen({ data }: { data: ConversationData }) {
             reactions={data.reactions}
             membersById={data.membersById}
             showAddReaction
+            onReact={addReaction}
           />
         ) : (
           <p className="text-muted" style={{ padding: '1.5rem' }}>
             No announcements yet.
           </p>
         )}
+        <MarkReadSentinel conversationId={conversation.id} />
       </div>
-      <footer className="channel-footer">
-        <span className="channel-footer-note">◆ Only managers can post</span>
-      </footer>
+      {/* TEMPORARY(auth): gate on the ?can_post_announcements query-param flag
+          until real auth provides the member's server-side permission. */}
+      {session.canPostAnnouncements ? (
+        <AnnouncementComposer conversationId={conversation.id} />
+      ) : (
+        <footer className="channel-footer">
+          <span className="channel-footer-note">◆ Only managers can post</span>
+        </footer>
+      )}
     </div>
   )
 }
@@ -102,6 +116,15 @@ function ConversationScreen({
   const conversation = data.conversation!
   const isGroup = conversation.kind === 'group'
   const title = conversationTitle(conversation, data.roster, data.membersById, session.memberId)
+  const [replyTo, setReplyTo] = useState<ReplyTarget | undefined>(undefined)
+
+  const startReply = (message: Message) => {
+    const author =
+      message.author_id === session.memberId
+        ? 'You'
+        : (data.membersById.get(message.author_id)?.name ?? 'Former teammate')
+    setReplyTo({ messageId: message.id, authorName: author, text: message.body ?? '' })
+  }
 
   const otherId = conversation.kind === 'dm'
     ? data.roster.find((r) => r.member_id !== session.memberId)?.member_id
@@ -141,6 +164,8 @@ function ConversationScreen({
         reactions={data.reactions}
         membersById={data.membersById}
         showAuthors={isGroup}
+        onReply={startReply}
+        onReact={addReaction}
       />
     ) : (
       <p className="text-muted" style={{ padding: '1.5rem' }}>
@@ -148,12 +173,24 @@ function ConversationScreen({
       </p>
     )
 
+  const composer = (
+    <Composer
+      conversationId={conversation.id}
+      replyTo={replyTo}
+      onCancelReply={() => setReplyTo(undefined)}
+    />
+  )
+  const sentinel = <MarkReadSentinel conversationId={conversation.id} />
+
   if (!isDesktop) {
     return (
       <div className="phone">
         {topbar}
-        <div className="phone-scroll convo-scroll">{transcript}</div>
-        <Composer />
+        <div className="phone-scroll convo-scroll">
+          {transcript}
+          {sentinel}
+        </div>
+        {composer}
       </div>
     )
   }
@@ -163,9 +200,12 @@ function ConversationScreen({
       <main className="desktop-main">
         {topbar}
         <div className="convo-scroll desktop-convo">
-          <div className="desktop-transcript">{transcript}</div>
+          <div className="desktop-transcript">
+            {transcript}
+            {sentinel}
+          </div>
         </div>
-        <Composer />
+        {composer}
       </main>
       {isGroup && data.rosterMembers.length > 0 && <MembersPanel members={data.rosterMembers} />}
     </>

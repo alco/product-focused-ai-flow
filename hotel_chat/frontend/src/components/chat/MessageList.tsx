@@ -6,7 +6,7 @@
 // Takes raw collection rows; dividers, time labels and reaction chips are
 // derived here (nothing display-shaped is stored).
 
-import { Fragment, useMemo } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import type { Member, Message, MessageReaction } from '../../db/schema'
 import { session } from '../../db/session'
 import { aggregateReactions } from '../../db/derive'
@@ -15,7 +15,7 @@ import { Avatar } from '../Avatar'
 import { authorColor } from './palette'
 import { DayDivider } from './DayDivider'
 import { SystemLine } from './SystemLine'
-import { ReactionChips } from './ReactionChips'
+import { EmojiPicker, ReactionChips } from './ReactionChips'
 import { MessageBubble } from './MessageBubble'
 import '../../styles/conversation.css'
 
@@ -25,6 +25,8 @@ export function MessageList({
   membersById,
   showAuthors = false,
   currentUserId = session.memberId,
+  onReply,
+  onReact,
 }: {
   /** The conversation's message window, ascending by inserted_at. */
   messages: Message[]
@@ -35,8 +37,13 @@ export function MessageList({
   showAuthors?: boolean
   /** Whose messages align right in lime. Defaults to the signed-in member. */
   currentUserId?: string
+  /** When set, messages get a reply affordance. */
+  onReply?: (message: Message) => void
+  /** When set, messages get a react affordance and clickable chips. */
+  onReact?: (messageId: string, emoji: string) => void
 }) {
   const byId = new Map(messages.map((m) => [m.id, m]))
+  const [pickerFor, setPickerFor] = useState<string | null>(null)
 
   const reactionsByMessage = useMemo(() => {
     const map = new Map<string, MessageReaction[]>()
@@ -94,7 +101,46 @@ export function MessageList({
                   </span>
                 )}
                 <MessageBubble text={m.body ?? ''} time={timeLabel(m.inserted_at)} quote={quote} />
-                {chips.length > 0 && <ReactionChips reactions={chips} />}
+                {chips.length > 0 && (
+                  <ReactionChips
+                    reactions={chips}
+                    onReact={onReact ? (emoji) => onReact(m.id, emoji) : undefined}
+                  />
+                )}
+                {(onReply || onReact) && (
+                  <div className="msg-actions">
+                    {onReact && (
+                      <button
+                        type="button"
+                        className="msg-action-btn"
+                        aria-label="Add reaction"
+                        onClick={() => setPickerFor(pickerFor === m.id ? null : m.id)}
+                      >
+                        🙂+
+                      </button>
+                    )}
+                    {onReply && (
+                      <button
+                        type="button"
+                        className="msg-action-btn"
+                        onClick={() => {
+                          setPickerFor(null)
+                          onReply(m)
+                        }}
+                      >
+                        ↩ Reply
+                      </button>
+                    )}
+                  </div>
+                )}
+                {onReact && pickerFor === m.id && (
+                  <EmojiPicker
+                    onPick={(emoji) => {
+                      onReact(m.id, emoji)
+                      setPickerFor(null)
+                    }}
+                  />
+                )}
               </div>
             </div>
           </Fragment>

@@ -1,0 +1,154 @@
+/* Chat list (mobile home) — /mobile/chats
+   Screen-specific styles; brand tokens from sona-brand.css, chrome from app.css. */
+
+.chat-section {
+  padding-bottom: 0.375rem;
+}
+
+/* Official channels carry the lime signature: tinted section on top of white list */
+.chat-section--official {
+  background: var(--lime-50);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-section--official .section-label {
+  color: #4d7c0f; /* lime-700, matches .pill--lime text */
+}
+
+/* --- Rows ---------------------------------------------------------------- */
+
+.chat-row {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+}
+
+/* Squared-off tinted tile for non-person chats (groups + official channels) */
+.chat-tile {
+  align-items: center;
+  background: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  height: 44px;
+  justify-content: center;
+  line-height: 1;
+  user-select: none;
+  width: 44px;
+}
+
+.chat-tile--official {
+  background: var(--lime-100);
+  border-color: var(--lime-200);
+}
+
+.chat-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-name-row {
+  align-items: baseline;
+  display: flex;
+  gap: 0.375rem;
+}
+
+.chat-name {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-flag {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.chat-preview {
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Right column: time + badge / mute ----------------------------------- */
+
+.chat-meta {
+  align-items: flex-end;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: 0.3125rem;
+  padding-top: 0.125rem;
+}
+
+.chat-time {
+  color: var(--subtle-foreground);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.chat-mute {
+  font-size: 0.75rem;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* Unread rows: name and time slightly emphasized */
+.chat-row--unread .chat-name {
+  color: var(--sona-dark);
+}
+
+.chat-row--unread .chat-time {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* --- Floating new-chat button -------------------------------------------- */
+
+.fab {
+  align-items: center;
+  background: var(--sona-dark);
+  border-radius: var(--radius-full);
+  bottom: calc(74px + env(safe-area-inset-bottom));
+  box-shadow: var(--shadow-hover);
+  color: #fff;
+  display: flex;
+  font-size: 1.625rem;
+  font-weight: 300;
+  height: 52px;
+  justify-content: center;
+  line-height: 1;
+  position: fixed;
+  right: 1rem;
+  text-decoration: none;
+  width: 52px;
+  z-index: 20;
+}
+
+.fab:hover {
+  background: var(--accent-blue);
+  text-decoration: none;
+}
+
+/* Keep the FAB pinned to the phone column's right edge on wide viewports */
+@media (min-width: 431px) {
+  .fab {
+    right: calc(50vw - 215px + 1rem);
+  }
+}

@@ -17,19 +17,19 @@ The read path is Electric shapes end to end: every screen renders from TanStack 
 
 `$my_convs` below abbreviates the membership subquery: `(SELECT conversation_id FROM conversation_members WHERE member_id = $me)`.
 
-| ID | Table | WHERE | Columns | Lifecycle |
-|----|-------|-------|---------|-----------|
-| **S1** `my_memberships` | conversation_members | `member_id = $me` | all | standing |
-| **S2** `my_conversations` | conversations | `id IN $my_convs` | all | standing, self-maintaining |
-| **S2b** `rosters` | conversation_members | `conversation_id IN $my_convs` | conversation_id, member_id, added_by | standing, self-maintaining (note 2) |
-| **S3** `directory` | members | `company_id = $company AND active = true` | id, company_id, name, job_title, role, active | standing |
-| **S4** `member_locations` | member_locations | `member_id IN (SELECT id FROM members WHERE company_id = $company)` | all | standing |
-| **S5** `locations` | locations | `company_id = $company` | id, company_id, name, city | standing |
-| **S6** `my_settings` | member_settings | `member_id = $me` | all | standing |
-| **S7** `my_schedule` | work_schedules | `member_id = $me` | all | standing |
-| **S8** `messages:{c}` | messages | `conversation_id = $c` | all | one per conversation in S1, created at startup; **initial subset snapshot = latest ~20** (`ORDER BY inserted_at DESC LIMIT 20`), live tail thereafter, older pages on scroll (note 1) |
-| **S9** `reactions:{c}` | message_reactions | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all | created when the chat is opened |
-| **S10** `attachments:{c}` | message_attachments | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all | created when the chat is opened |
+| ID                        | Table                | WHERE                                                                | Columns                                       | Lifecycle                                                                                                                                                                             |
+| ------------------------- | -------------------- | -------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S1** `my_memberships`   | conversation_members | `member_id = $me`                                                    | all                                           | standing                                                                                                                                                                              |
+| **S2** `my_conversations` | conversations        | `id IN $my_convs`                                                    | all                                           | standing, self-maintaining                                                                                                                                                            |
+| **S2b** `rosters`         | conversation_members | `conversation_id IN $my_convs`                                       | conversation_id, member_id, added_by          | standing, self-maintaining (note 2)                                                                                                                                                   |
+| **S3** `directory`        | members              | `company_id = $company AND active = true`                            | id, company_id, name, job_title, role, active | standing                                                                                                                                                                              |
+| **S4** `member_locations` | member_locations     | `member_id IN (SELECT id FROM members WHERE company_id = $company)`  | all                                           | standing                                                                                                                                                                              |
+| **S5** `locations`        | locations            | `company_id = $company`                                              | id, company_id, name, city                    | standing                                                                                                                                                                              |
+| **S6** `my_settings`      | member_settings      | `member_id = $me`                                                    | all                                           | standing                                                                                                                                                                              |
+| **S7** `my_schedule`      | work_schedules       | `member_id = $me`                                                    | all                                           | standing                                                                                                                                                                              |
+| **S8** `messages:{c}`     | messages             | `conversation_id = $c`                                               | all                                           | one per conversation in S1, created at startup; **initial subset snapshot = latest ~20** (`ORDER BY inserted_at DESC LIMIT 20`), live tail thereafter, older pages on scroll (note 1) |
+| **S9** `reactions:{c}`    | message_reactions    | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all                                           | created when the chat is opened                                                                                                                                                       |
+| **S10** `attachments:{c}` | message_attachments  | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all                                           | created when the chat is opened                                                                                                                                                       |
 
 Deliberate non-shapes: **presence** (Phoenix Presence over a channel — ephemeral), **push_subscriptions** (server-side only), **invites** (pre-auth; the onboarding screen talks to the API), **companies** (the client learns its company name via S5/session bootstrap; revisit if company-level settings grow).
 
@@ -39,16 +39,16 @@ Deliberate non-shapes: **presence** (Phoenix Presence over a channel — ephemer
 
 ## Screens → shapes
 
-| Screen (session-2 mockup) | Shapes used | What renders from what |
-|---|---|---|
-| `/mobile/chats` (chat list) + desktop sidebar | S1 + S2 + S2b + S3 + S8× | S2: name, kind, emoji. S8 windows: preview line + recency order (author first name ⋈ S3). S1: favorite/muted flags, `last_read_at` → unread badges vs S8. DM titles = S2b ⋈ S3 minus me; group member counts = count over S2b. One live query joining five collections. |
-| `/mobile/chat-group`, `/mobile/chat-dm`, desktop conversation pane | S8 + S9 + S10 for the open `$c`; S3 for author names/avatars | transcript order = `inserted_at`; older history pages in via further snapshot requests; reply quotes resolve from the local S8 store (a quote pointing outside the loaded window shows a fetch-on-tap stub); reactions aggregate client-side to `{emoji, count, mine}` |
-| `/mobile/channel`, `/mobile/channel-manager` | same as conversation (channels are conversations); S8 rows carry `title`/`post_emoji` | audience line ("Everyone at Bankside · 34") = count over S2b for the channel |
-| `/mobile/people` (directory) + new-chat picker | S3 + S4 + S5 | job title, role badge, location name per person |
-| `/mobile/profile` | S3 (own row) + S6 + S7 + S1 (⋈ S2 for chat names) | schedule card (S7), snooze (S6), muted-chats list |
-| `/mobile/new-chat` | S3 (+ S4) | member picker; creation itself is an API write |
-| `/mobile/onboarding` | — | pre-auth, API-only (invite lookup, OTP, profile) |
-| Desktop members panel | S2b (rows for the open `$c`) ⋈ S3 | roster with names/titles — no per-conversation shape needed |
+| Screen (session-2 mockup)                                          | Shapes used                                                                           | What renders from what                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/mobile/chats` (chat list) + desktop sidebar                      | S1 + S2 + S2b + S3 + S8×                                                              | S2: name, kind, emoji. S8 windows: preview line + recency order (author first name ⋈ S3). S1: favorite/muted flags, `last_read_at` → unread badges vs S8. DM titles = S2b ⋈ S3 minus me; group member counts = count over S2b. One live query joining five collections. |
+| `/mobile/chat-group`, `/mobile/chat-dm`, desktop conversation pane | S8 + S9 + S10 for the open `$c`; S3 for author names/avatars                          | transcript order = `inserted_at`; older history pages in via further snapshot requests; reply quotes resolve from the local S8 store (a quote pointing outside the loaded window shows a fetch-on-tap stub); reactions aggregate client-side to `{emoji, count, mine}`  |
+| `/mobile/channel`, `/mobile/channel-manager`                       | same as conversation (channels are conversations); S8 rows carry `title`/`post_emoji` | audience line ("Everyone at Bankside · 34") = count over S2b for the channel                                                                                                                                                                                            |
+| `/mobile/people` (directory) + new-chat picker                     | S3 + S4 + S5                                                                          | job title, role badge, location name per person                                                                                                                                                                                                                         |
+| `/mobile/profile`                                                  | S3 (own row) + S6 + S7 + S1 (⋈ S2 for chat names)                                     | schedule card (S7), snooze (S6), muted-chats list                                                                                                                                                                                                                       |
+| `/mobile/new-chat`                                                 | S3 (+ S4)                                                                             | member picker; creation itself is an API write                                                                                                                                                                                                                          |
+| `/mobile/onboarding`                                               | —                                                                                     | pre-auth, API-only (invite lookup, OTP, profile)                                                                                                                                                                                                                        |
+| Desktop members panel                                              | S2b (rows for the open `$c`) ⋈ S3                                                     | roster with names/titles — no per-conversation shape needed                                                                                                                                                                                                             |
 
 ## Unread badges (derived, not stored)
 
@@ -58,19 +58,19 @@ Unread for a conversation = count of S8 rows with `inserted_at > my last_read_at
 
 Every shape's snapshot/subquery evaluation, against the indexes declared in the data-model doc:
 
-| Shape | Query shape | Serving index | Verdict |
-|---|---|---|---|
-| S1 | `member_id = $me` | `conversation_members (member_id)` | ✅ declared |
-| S2 | subquery: `conversation_members.member_id = $me` → root: `id IN (…)` | `conversation_members (member_id)`; PK | ✅ free |
-| S2b | same subquery → root: `conversation_id IN (…)` | unique `(conversation_id, member_id)` prefix | ✅ free |
-| S3 | `company_id = $c AND active` | `members (company_id, active)` | ✅ declared |
-| S4 | subquery: `members.company_id = $c` → root: `member_id IN (…)` | `members (company_id, active)` prefix; PK `(member_id, location_id)` prefix | ✅ free |
-| S5 | `company_id = $c` | `locations (company_id)` | ✅ declared |
-| S6 | `member_id = $me` | PK (member_id) | ✅ free |
-| S7 | `member_id = $me` | unique `(member_id, weekday)` prefix | ✅ free |
-| S8 | `conversation_id = $c` (+ snapshot `ORDER BY inserted_at DESC LIMIT n`) | `messages (conversation_id, inserted_at)` — filter, order, and window paging off one composite | ✅ declared |
-| S9 | subquery: `messages.conversation_id = $c` → root: `message_id IN (…)` | `messages (conversation_id, inserted_at)` prefix; unique `(message_id, member_id, emoji)` prefix | ✅ free |
-| S10 | same subquery → root: `message_id IN (…)` | `message_attachments (message_id)` | ✅ declared (also the FK's natural index) |
+| Shape | Query shape                                                             | Serving index                                                                                    | Verdict                                   |
+| ----- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| S1    | `member_id = $me`                                                       | `conversation_members (member_id)`                                                               | ✅ declared                               |
+| S2    | subquery: `conversation_members.member_id = $me` → root: `id IN (…)`    | `conversation_members (member_id)`; PK                                                           | ✅ free                                   |
+| S2b   | same subquery → root: `conversation_id IN (…)`                          | unique `(conversation_id, member_id)` prefix                                                     | ✅ free                                   |
+| S3    | `company_id = $c AND active`                                            | `members (company_id, active)`                                                                   | ✅ declared                               |
+| S4    | subquery: `members.company_id = $c` → root: `member_id IN (…)`          | `members (company_id, active)` prefix; PK `(member_id, location_id)` prefix                      | ✅ free                                   |
+| S5    | `company_id = $c`                                                       | `locations (company_id)`                                                                         | ✅ declared                               |
+| S6    | `member_id = $me`                                                       | PK (member_id)                                                                                   | ✅ free                                   |
+| S7    | `member_id = $me`                                                       | unique `(member_id, weekday)` prefix                                                             | ✅ free                                   |
+| S8    | `conversation_id = $c` (+ snapshot `ORDER BY inserted_at DESC LIMIT n`) | `messages (conversation_id, inserted_at)` — filter, order, and window paging off one composite   | ✅ declared                               |
+| S9    | subquery: `messages.conversation_id = $c` → root: `message_id IN (…)`   | `messages (conversation_id, inserted_at)` prefix; unique `(message_id, member_id, emoji)` prefix | ✅ free                                   |
+| S10   | same subquery → root: `message_id IN (…)`                               | `message_attachments (message_id)`                                                               | ✅ declared (also the FK's natural index) |
 
 Conclusion: **no missing indexes — and no shape-only indexes either.** Every index in the data-model doc is justified by a key, an FK, or a write-path lookup; the shapes ride along for free. (Two earlier drafts carried three shape-only indexes and five denormalized columns; subqueries + client joins + subset snapshots eliminated all of them.)
 

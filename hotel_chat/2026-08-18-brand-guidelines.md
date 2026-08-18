@@ -18,10 +18,10 @@ Sona ("AI for better workforce decisions", founded 2021, backed by Google's AI f
 
 Both faces are free Google Fonts — nothing licensed to work around.
 
-| Role | Face | Usage rules observed |
-|------|------|---------------------|
-| Primary — all UI & headings | **Sora** | Headings 600 (semibold; occasionally 700 for display), `tracking-tight` (−0.025em), line-height 1.1–1.3. Body 400 at 16–18px (`clamp(1rem, .5vw + .8rem, 1.125rem)`), line-height 1.6. UI labels 500/600 at 14px. |
-| Secondary — labels & data | **IBM Plex Mono** | Uppercase eyebrow labels with wide tracking (0.15em), category tags, numbered markers (`01`, `02`), stat figures, button labels inside product-UI cards. |
+| Role                        | Face              | Usage rules observed                                                                                                                                                                                              |
+| --------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Primary — all UI & headings | **Sora**          | Headings 600 (semibold; occasionally 700 for display), `tracking-tight` (−0.025em), line-height 1.1–1.3. Body 400 at 16–18px (`clamp(1rem, .5vw + .8rem, 1.125rem)`), line-height 1.6. UI labels 500/600 at 14px. |
+| Secondary — labels & data   | **IBM Plex Mono** | Uppercase eyebrow labels with wide tracking (0.15em), category tags, numbered markers (`01`, `02`), stat figures, button labels inside product-UI cards.                                                          |
 
 Heading scale in practice (mobile → desktop): h1 40→68px, h2 30→44px, h3 20–24px, all Sora 600 tracking-tight, color near-black (`#0f172a` on light, white on dark).
 
@@ -33,16 +33,16 @@ Sona runs a shadcn-style HSL token system over Tailwind's **stone** (warm gray) 
 
 ### Core tokens
 
-| Token | Value | Role |
-|-------|-------|------|
-| `--background` | `#fafaf9` (stone-50) | Page background — warm off-white, never pure white pages |
-| `--foreground` | `#1c1917` (stone-900) | Default text |
-| `--sona-dark` | `#0f172a` (slate-900) | Headlines, primary buttons, dark sections |
-| `--primary` | `#12876c` (hsl 166 76% 30%) | Brand teal-green — accent text, eyebrows, links, active states |
-| `--sona-accent` | `#3b82f6` | Blue — button hover state, interactive accents |
-| `--border` | `#e2e0df` / `#e7e5e4` (stone-200) | Hairline 1px borders everywhere |
-| `--muted` | `#f5f5f4` (stone-100) | Muted surfaces, secondary-button hover |
-| `--muted-foreground` | `#65758b` (slate-ish) | Secondary text; also stone-500 `#78716c`, stone-600 `#57534e` |
+| Token                | Value                             | Role                                                           |
+| -------------------- | --------------------------------- | -------------------------------------------------------------- |
+| `--background`       | `#fafaf9` (stone-50)              | Page background — warm off-white, never pure white pages       |
+| `--foreground`       | `#1c1917` (stone-900)             | Default text                                                   |
+| `--sona-dark`        | `#0f172a` (slate-900)             | Headlines, primary buttons, dark sections                      |
+| `--primary`          | `#12876c` (hsl 166 76% 30%)       | Brand teal-green — accent text, eyebrows, links, active states |
+| `--sona-accent`      | `#3b82f6`                         | Blue — button hover state, interactive accents                 |
+| `--border`           | `#e2e0df` / `#e7e5e4` (stone-200) | Hairline 1px borders everywhere                                |
+| `--muted`            | `#f5f5f4` (stone-100)             | Muted surfaces, secondary-button hover                         |
+| `--muted-foreground` | `#65758b` (slate-ish)             | Secondary text; also stone-500 `#78716c`, stone-600 `#57534e`  |
 
 ### Accent ramps (used semantically, not decoratively)
 

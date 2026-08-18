@@ -6,21 +6,21 @@ Now that we have established the product vision and defined the scope for the MV
 
 At a high level, we'll have separate directories for the frontend (hotel_chat/frontend) and backend (hotel_chat/backend). Our frontend tech stack:
 
-| Layer | Choice | Notes |
-|---|---|---|
-| UI framework | React | Standard, no SSR framework layer |
-| Routing | **TanStack Router** | Not TanStack Start |
-| Local data store | **TanStack DB** (v0.6+) | Reactive client store, syncs via Electric collections |
-| Build tool | Vite | Also underlies TanStack Router's dev/build pipeline |
-| Language | TypeScript | End-to-end type safety, especially route params/search params via Router |
-| Styling | Static and inline CSS if we can get away with it? See hotel_chat/brand | |
+| Layer            | Choice                                                                 | Notes                                                                    |
+| ---------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| UI framework     | React                                                                  | Standard, no SSR framework layer                                         |
+| Routing          | **TanStack Router**                                                    | Not TanStack Start                                                       |
+| Local data store | **TanStack DB** (v0.6+)                                                | Reactive client store, syncs via Electric collections                    |
+| Build tool       | Vite                                                                   | Also underlies TanStack Router's dev/build pipeline                      |
+| Language         | TypeScript                                                             | End-to-end type safety, especially route params/search params via Router |
+| Styling          | Static and inline CSS if we can get away with it? See hotel_chat/brand |                                                                          |
 
 Later on, once we're working on the implementation, we'll look towards
 
-| Layer | Choice | Notes |
-|---|---|---|
-| Local persistence | `@tanstack/db-sqlite-persistence-core` (wa-sqlite / browser adapter) | Persists collections across reloads/restarts |
-| Offline mutation queue | `@tanstack/offline-transactions` | Queues writes made offline, replays on reconnect |
+| Layer                  | Choice                                                               | Notes                                            |
+| ---------------------- | -------------------------------------------------------------------- | ------------------------------------------------ |
+| Local persistence      | `@tanstack/db-sqlite-persistence-core` (wa-sqlite / browser adapter) | Persists collections across reloads/restarts     |
+| Offline mutation queue | `@tanstack/offline-transactions`                                     | Queues writes made offline, replays on reconnect |
 
 For now, though, you job is to set up a working Node project using the tech choices listed above. For TanStack-specific parts, use the bundled skills as described at the top of [this blog](https://electric.ax/blog/2026/03/06/agent-skills-now-shipping).
 

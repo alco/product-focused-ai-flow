@@ -25,6 +25,17 @@ Open **`https://localhost:5443`** (Caddy, see below) or plain `http://localhost:
 
 `mix db.seed` (part of `mix setup`, or run alone to reseed) populates the same demo dataset — one company, one location, 16 staff, 18 conversations — the frontend used to hard-code as fixtures; see `agent_artifacts/data-model.md`.
 
+### Running multiple instances in parallel
+
+Set `PORTS` to a numeric offset to run another instance — e.g. one per git worktree, for working on separate features side by side — without port collisions:
+
+```sh
+PORTS=1 ./run.sh   # vite :5174, phoenix :4001, caddy :5444 -> https://localhost:5444
+PORTS=2 ./run.sh   # vite :5175, phoenix :4002, caddy :5445 -> https://localhost:5445
+```
+
+Postgres/Electric (`docker compose`) are untouched by `PORTS` and deliberately shared across every instance — all of them talk to the same database.
+
 ## HTTPS / HTTP2
 
 Electric shape requests are long-lived GETs, and once more than 6 are open at once, plain HTTP/1.1 (Vite's dev server, port 5173) starts queueing them — Chrome's per-origin connection cap. Caddy (`Caddyfile`, started by `run.sh`) terminates TLS on `:5443` in front of Vite and negotiates HTTP/2 with the browser, lifting that cap. Vite itself has no HTTP/2 support to fall back on, so this is the only way to get it in dev.

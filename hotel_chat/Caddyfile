@@ -11,12 +11,16 @@
 # (long-lived GETs) stack up. Caddy terminates TLS with its own local CA and
 # negotiates HTTP/2 with the browser, then forwards plain HTTP/1.1 to Vite
 # underneath — only the browser-facing leg needs h2.
+#
+# CADDY_PORT/VITE_PORT (env, {$NAME:default} substitution) let ../run.sh
+# run multiple instances in parallel (one per git worktree) without
+# colliding — see the "PORTS" section of ../README.md.
 {
 	# Skip the automatic :80 -> :443 HTTP redirect server: it needs a
 	# privileged port and we don't serve plain HTTP here anyway.
 	auto_https disable_redirects
 }
 
-localhost:5443 {
-	reverse_proxy localhost:5173
+localhost:{$CADDY_PORT:5443} {
+	reverse_proxy localhost:{$VITE_PORT:5173}
 }

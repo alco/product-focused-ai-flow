@@ -8,6 +8,14 @@
 # Assumes `pnpm install` (frontend/) and `mix setup` (backend/) have
 # already been run at least once.
 #
+# Set PORTS to run multiple instances in parallel — e.g. one per git
+# worktree while working on different features — without them colliding.
+# It's a numeric offset added to each service's default port; docker
+# compose (Postgres/Electric) is untouched by it, deliberately shared
+# across instances:
+#   PORTS=1 ./run.sh   -> vite :5174, phoenix :4001, caddy :5444
+#   PORTS=2 ./run.sh   -> vite :5175, phoenix :4002, caddy :5445
+#
 # Ctrl-C kills Caddy directly, since it's the foreground process; the EXIT
 # trap below then takes down the backgrounded frontend/backend too,
 # including their children (vite's node process, the BEAM VM) — `set -m`
@@ -20,6 +28,11 @@
 set -euo pipefail
 set -m
 cd "$(dirname "$0")"
+
+PORTS="${PORTS:-0}"
+export VITE_PORT=$((5173 + PORTS))
+export PHX_PORT=$((4000 + PORTS))
+export CADDY_PORT=$((5443 + PORTS))
 
 pids=()
 cleanup() {
@@ -34,13 +47,13 @@ trap cleanup EXIT
 echo "==> [1/4] Starting Postgres + Electric (docker compose up -d)"
 docker compose up -d
 
-echo "==> [2/4] Starting frontend (pnpm dev)"
+echo "==> [2/4] Starting frontend (pnpm dev, :$VITE_PORT)"
 (cd frontend && exec pnpm dev) &
 pids+=("$!")
 
-echo "==> [3/4] Starting backend (mix phx.server)"
-(cd backend && exec mix phx.server) &
+echo "==> [3/4] Starting backend (mix phx.server, :$PHX_PORT)"
+(cd backend && PORT="$PHX_PORT" exec mix phx.server) &
 pids+=("$!")
 
-echo "==> [4/4] Starting Caddy (https://localhost:5443)"
+echo "==> [4/4] Starting Caddy (https://localhost:$CADDY_PORT)"
 caddy run --config Caddyfile

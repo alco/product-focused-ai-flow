@@ -1,7 +1,7 @@
 defmodule HotelChatWeb.SyncController do
   use HotelChatWeb, :controller
 
-  alias HotelChat.Sync.Shapes
+  alias HotelChat.Sync.{MockSession, Shapes}
 
   @moduledoc """
   Authorizing proxy in front of the Electric sync service.
@@ -23,9 +23,9 @@ defmodule HotelChatWeb.SyncController do
   @passthrough_resp_headers ~w(content-type etag cache-control)
 
   def show(conn, %{"shape" => shape_name} = params) do
-    # TODO(auth): populate from the authenticated session once auth lands;
+    # TODO(auth): swap for the real authenticated session once auth lands;
     # shape definitions use it for $me/$company scoping.
-    session = %{}
+    session = MockSession.get()
 
     case Shapes.define(shape_name, session) do
       {:ok, shape} ->

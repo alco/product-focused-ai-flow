@@ -14,17 +14,9 @@ alias HotelChat.Repo
 alias HotelChat.Companies.{Company, Location}
 alias HotelChat.Identity.{Member, MemberLocation, MemberSettings, WorkSchedule}
 alias HotelChat.Conversations.{Conversation, ConversationMember, Message, MessageReaction}
+alias HotelChat.Seeds.Id
 
-defmodule HotelChat.Seeds.Id do
-  @moduledoc false
-  def uuid(seed) do
-    hash = :crypto.hash(:sha256, seed) |> binary_part(0, 16)
-    {:ok, uuid} = Ecto.UUID.load(hash)
-    uuid
-  end
-end
-
-id = &HotelChat.Seeds.Id.uuid/1
+id = &Id.uuid/1
 company_id_of = fn -> id.("company:harbourlight") end
 location_id_of = fn -> id.("location:bankside") end
 member_id = fn slug -> id.("member:#{slug}") end

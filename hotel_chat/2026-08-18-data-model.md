@@ -144,11 +144,10 @@ One table for all four kinds (session-1 R4): `dm`, `group`, `location_channel`, 
 | id | uuid | no | gen_random_uuid() | PK |
 | company_id | uuid | no | | FK → companies |
 | kind | text | no | | CHECK in ('dm','group','location_channel','company_channel') |
-| name | text | yes | | null for DMs (client renders the other member's name) |
+| name | text | yes | | null for DMs — the client derives the counterpart's name by joining the roster and directory collections (shape doc, note 2) |
 | emoji | text | yes | | group tile identity (mockups' `groupEmoji`) |
 | location_id | uuid | yes | | FK → locations; set iff kind='location_channel' |
 | dm_key | text | yes | | canonical `least(member_a,member_b)‖':'‖greatest(...)`; the DM-uniqueness key |
-| dm_member_a / dm_member_b | uuid | yes | | FK → members; set iff kind='dm' — lets the chat list name a DM ("the one that isn't me") without extra shapes; surfaced by the shape-model cross-check (its note 2) |
 | created_by | uuid | yes | | FK → members |
 | archived_at | timestamptz | yes | | manager archive (session-1 R4); archived chats drop out of lists client-side |
 | last_message_at | timestamptz | yes | | ⚡ denormalized chat-list card: order key … |
@@ -256,7 +255,7 @@ One row per member per emoji per message; the client aggregates to `{emoji, coun
 |---|---|
 | 1 | ⑂ `MuteState` (session 1) folded into `conversation_members` — same key, same consumer, one shape instead of two. |
 | 2 | ⑂ Announcement posts are `messages` rows with `title`/`post_emoji`, not a separate table — channels are conversations (session-1 R4), and reactions/attachments/shapes work identically for free. |
-| 3 | ⚡ Shape-driven denormalization: `conversation_id` on `message_reactions`/`message_attachments`, `company_id` on `member_locations`, `last_message_*` on `conversations`, `unread_count` on `conversation_members`. Each is written once (or in the writer's transaction) and exists to make a screen's shape a single-table filter. |
+| 3 | ⚡ Denormalization is reserved for two jobs only — never display composition, which TanStack DB live queries handle by joining collections client-side (review feedback). Job one, server-side row scoping (a shape's WHERE sees one table): `conversation_id` on `message_reactions`/`message_attachments`, `company_id` on `member_locations`. Job two, keeping the message firehose out of standing shapes: `last_message_*` on `conversations`, `unread_count` on `conversation_members`. |
 | 4 | `member_settings` split from `members` so private state (snooze, language) never rides the company-wide directory shape. |
 | 5 | uuid PKs everywhere, client-suppliable — TanStack DB optimistic writes need client-generated ids; `inserted_at` (not id) orders transcripts. |
 | 6 | `dm_key` + partial unique index = race-proof one-DM-per-pair without a junction lookup. |

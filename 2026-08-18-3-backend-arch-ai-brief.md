@@ -1,5 +1,7 @@
 # Backend architecture
 
+## Phase 1
+
 Create a new Phoenix project under backend directory here. It should have a docker compose file to run Postgres (alpine) container and the routing code should be ready for exposing Electric's HTTP API, the custom backend API (e.g. /api/group_chats) and routing to vite's dev server, as detailed below
 
 **Project layout** (you should only focus on the backend and absolutely do not touch anything in the frontend)
@@ -86,3 +88,14 @@ Write a top-level script (that is under hotel_chats) to automate the following r
 2. Copy `frontend/dist/*` into `backend/priv/static/` (a small script or CI step — `cp -r frontend/dist/* backend/priv/static/`)
 3. `mix release` — `priv/static` gets bundled into the release automatically, so the built frontend ships inside the same artifact as the backend
 4. Package it up as a Docker image that can serve both the backend API, the Electric API and the static frontend assets.
+
+
+## Phase 2
+
+At this point we're going to flesh out the data schema on the backend.
+
+Start by defining the tables, their columns, types, primary/foreign keys and indexes we'll need. 
+
+Next, catalog the different shapes needed by every frontend screen so we could double-check the DB index requirements.
+
+Once I have a chance to review and approve those, I will ask you to build Create/Update API endpoints for the data entities and write units tests for them. The read path in our case relies on ELectric shapes, we don't need to test that. We can verify that the data has ended up written into the database by a controller using just Ecto.from().

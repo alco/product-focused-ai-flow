@@ -4,6 +4,7 @@
 
 import { Link } from '@tanstack/react-router'
 import { Avatar } from './Avatar'
+import { GroupCircles } from './GroupCircles'
 import { useChatList } from '../hooks/useChatList'
 import type { ChatListItem } from '../hooks/useChatList'
 import '../styles/chat-list.css'
@@ -27,10 +28,12 @@ export function ChatRow({
     >
       {chat.isDm ? (
         <Avatar name={chat.title} />
-      ) : (
-        <span className={`chat-tile${official ? ' chat-tile--official' : ''}`} aria-hidden>
-          {official ? '📣' : (chat.emoji ?? '👥')}
+      ) : official ? (
+        <span className="chat-tile chat-tile--official" aria-hidden>
+          📣
         </span>
+      ) : (
+        <GroupCircles names={chat.memberNames} />
       )}
       <div className="chat-main">
         <div className="chat-name-row">

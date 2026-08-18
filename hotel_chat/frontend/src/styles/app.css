@@ -125,6 +125,43 @@
   user-select: none;
 }
 
+/* Group-chat avatar: overlapping member circles in a fixed square box
+   (see components/GroupCircles.tsx for the layout math) */
+.group-circles {
+  display: inline-block;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Circles share a vertical center → same baseline (they are equal-sized) */
+.group-circle {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Surface-colored ring separates a circle from the one it overlaps */
+.group-circle .avatar-circle {
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* Middle ellipsis for groups with more than 3 members; the component sets
+   `left` to the center of the gap between the second and last circle */
+.group-circles-ellipsis {
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
+  position: absolute;
+  text-shadow:
+    0 0 2px var(--surface),
+    0 0 2px var(--surface),
+    0 0 2px var(--surface);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+}
+
 /* Mono section label used for list sections, member lists, settings groups */
 .section-label {
   color: var(--subtle-foreground);

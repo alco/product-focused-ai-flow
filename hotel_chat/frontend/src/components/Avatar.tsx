@@ -15,6 +15,11 @@ function hashName(name: string): number {
   return Math.abs(h)
 }
 
+/** Deterministic background tint for a name (same one Avatar uses). */
+export function nameTint(name: string): string {
+  return tints[hashName(name) % tints.length].bg
+}
+
 export function initialsOf(name: string): string {
   const parts = name.split(/\s+/).filter(Boolean)
   const first = parts[0]?.[0] ?? ''
@@ -23,14 +28,13 @@ export function initialsOf(name: string): string {
 }
 
 export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
-  const tint = tints[hashName(name) % tints.length]
   return (
     <span
       className="avatar-circle"
       style={{
         width: size,
         height: size,
-        background: tint.bg,
+        background: nameTint(name),
         fontSize: size * 0.36,
       }}
       aria-hidden

@@ -13,7 +13,7 @@ import type { ReactNode } from 'react'
 import { Avatar } from '../../components/Avatar'
 import { Composer } from '../../components/chat/Composer'
 import { ConversationTopBar } from '../../components/chat/ConversationTopBar'
-import { GroupTile } from '../../components/chat/GroupTile'
+import { GroupCircles } from '../../components/GroupCircles'
 import { MessageList } from '../../components/chat/MessageList'
 import { MembersPanel } from '../../components/desktop/MembersPanel'
 import { TopbarNav } from '../../components/desktop/TopbarNav'
@@ -131,7 +131,7 @@ function ConversationScreen({
   const other = otherId ? data.membersById.get(otherId) : undefined
 
   const avatar: ReactNode = isGroup ? (
-    <GroupTile name={title} />
+    <GroupCircles names={data.rosterMembers.map((m) => m.name)} box={40} />
   ) : (
     <Avatar name={title} size={40} />
   )

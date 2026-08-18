@@ -21,16 +21,3 @@ const authorTones = [
 export function authorColor(name: string): string {
   return authorTones[hashName(name) % authorTones.length]
 }
-
-// Soft tile tints for squared group avatars (same family as Avatar's circles).
-const tileTints = [
-  'var(--sky-200)',
-  'var(--lime-200)',
-  '#ccfbf1', // teal-100
-  '#fed7cf', // coral tint
-  '#e0e7ff', // indigo-100
-]
-
-export function tileTint(name: string): string {
-  return tileTints[hashName(name) % tileTints.length]
-}

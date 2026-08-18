@@ -204,17 +204,6 @@
   width: 7px;
 }
 
-.group-tile {
-  align-items: center;
-  border-radius: 10px;
-  color: var(--sona-dark);
-  display: inline-flex;
-  flex-shrink: 0;
-  font-weight: 600;
-  justify-content: center;
-  user-select: none;
-}
-
 /* --- Composer ------------------------------------------------------------- */
 
 .composer {

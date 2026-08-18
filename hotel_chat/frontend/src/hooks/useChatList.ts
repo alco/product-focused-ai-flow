@@ -21,8 +21,9 @@ export interface ChatListItem {
   id: string
   kind: ConversationKind
   title: string
-  emoji: string | null
   isDm: boolean
+  /** Group chats: roster member names (alphabetical) for the circles avatar. */
+  memberNames: string[]
   favorite: boolean
   muted: boolean
   unread: number
@@ -85,17 +86,21 @@ export function useChatList(): ChatListSections {
         }
       }
 
+      const conversationRoster = rosterByConversation.get(conversation.id) ?? []
+      const memberNames =
+        conversation.kind === 'group'
+          ? conversationRoster
+              .map((r) => membersById.get(r.member_id)?.name)
+              .filter((name): name is string => name !== undefined)
+              .sort((a, b) => a.localeCompare(b))
+          : []
+
       items.push({
         id: conversation.id,
         kind: conversation.kind,
-        title: conversationTitle(
-          conversation,
-          rosterByConversation.get(conversation.id) ?? [],
-          membersById,
-          session.memberId,
-        ),
-        emoji: conversation.emoji,
+        title: conversationTitle(conversation, conversationRoster, membersById, session.memberId),
         isDm: conversation.kind === 'dm',
+        memberNames,
         favorite: membership.favorite,
         muted: isMuted(membership),
         unread: unreadCount(window, membership, session.memberId),

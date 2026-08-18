@@ -105,10 +105,10 @@
   overflow-y: auto;
 }
 
-/* Keep long transcript lines comfortably readable */
+/* Full available width: bubbles cap their own width (.msg-col) and anchor
+   to the container edges, so they keep a constant inset from either border */
 .desktop-transcript {
-  margin-inline: auto;
-  max-width: 48rem;
+  width: 100%;
 }
 
 .desktop-transcript .msg-list {

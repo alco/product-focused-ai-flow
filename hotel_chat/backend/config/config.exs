@@ -30,13 +30,9 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-# Electric sync runs embedded inside this app (as a library) and reuses the
-# Repo's database configuration. Its HTTP API is exposed through the router's
-# `sync` routes. Postgres must run with `wal_level=logical` (see docker-compose.yml).
-config :phoenix_sync,
-  env: config_env(),
-  mode: :embedded,
-  repo: HotelChat.Repo
+# Electric runs as a separate sync service (see docker-compose.yml); Phoenix
+# proxies /api/sync/* to it, injecting server-decided shape definitions and
+# the API secret. Per-env url/secret live in dev.exs / test.exs / runtime.exs.
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

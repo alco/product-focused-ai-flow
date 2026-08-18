@@ -1,8 +1,6 @@
 defmodule HotelChatWeb.Router do
   use HotelChatWeb, :router
 
-  import Phoenix.Sync.Router
-
   pipeline :browser do
     plug :accepts, ["html"]
   end
@@ -18,14 +16,14 @@ defmodule HotelChatWeb.Router do
     resources "/group_chats", GroupChatController, only: [:index, :create]
   end
 
-  # Electric HTTP API, served by the embedded Electric instance. Each `sync`
-  # route exposes a shape that speaks Electric's shape protocol, so clients
+  # Electric shape protocol, proxied to the Electric sync service. Clients
   # (e.g. @electric-sql/client or TanStack DB's electricCollectionOptions)
-  # point their `url` at these paths.
-  scope "/api/sync" do
+  # point their `url` at /api/sync/<shape-name>; the proxy resolves the name
+  # to a server-decided shape definition and attaches the API secret.
+  scope "/api/sync", HotelChatWeb do
     pipe_through :api
 
-    sync "/group_chats", HotelChat.Chats.GroupChat
+    get "/:shape", SyncController, :show
   end
 
   # Catch-all for the SPA — must come after /api. A hard refresh or deep link

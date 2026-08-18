@@ -13,9 +13,10 @@ config :hotel_chat, HotelChat.Repo,
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
-# Don't boot the embedded Electric instance (and its replication connection)
-# in tests.
-config :phoenix_sync, mode: :disabled
+# No Electric service in tests; the read path (shape proxying) is not under test.
+config :hotel_chat, :electric,
+  url: "http://localhost:0",
+  secret: "test-secret"
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.

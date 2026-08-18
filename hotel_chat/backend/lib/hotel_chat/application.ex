@@ -15,7 +15,7 @@ defmodule HotelChat.Application do
       # Start a worker by calling: HotelChat.Worker.start_link(arg)
       # {HotelChat.Worker, arg},
       # Start to serve requests, typically the last entry
-      {HotelChatWeb.Endpoint, phoenix_sync: Phoenix.Sync.plug_opts()}
+      HotelChatWeb.Endpoint
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html

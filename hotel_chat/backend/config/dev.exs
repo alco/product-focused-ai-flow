@@ -61,3 +61,10 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# The Electric sync service from docker-compose.yml; the secret must match
+# ELECTRIC_SECRET there. It is attached to proxied requests server-side and
+# never reaches the browser.
+config :hotel_chat, :electric,
+  url: "http://localhost:3000",
+  secret: "dev-electric-secret"

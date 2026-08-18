@@ -18,5 +18,22 @@ services:
       timeout: 5s
       retries: 10
 
+  electric:
+    image: electricsql/electric:1.7.11
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/hotel_chat_dev?sslmode=disable
+      # Must match config :hotel_chat, :electric in config/dev.exs. The
+      # Phoenix proxy attaches it server-side; the browser never sees it.
+      ELECTRIC_SECRET: dev-electric-secret
+    ports:
+      # Bound to localhost: only the Phoenix proxy should reach it.
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - electric_data:/app/persistent
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
+  electric_data:

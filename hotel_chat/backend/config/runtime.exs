@@ -33,6 +33,14 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
+  config :hotel_chat, :electric,
+    url:
+      System.get_env("ELECTRIC_URL") ||
+        raise("environment variable ELECTRIC_URL is missing, e.g. http://electric:3000"),
+    secret:
+      System.get_env("ELECTRIC_SECRET") ||
+        raise("environment variable ELECTRIC_SECRET is missing")
+
   config :hotel_chat, HotelChat.Repo,
     # ssl: true,
     url: database_url,

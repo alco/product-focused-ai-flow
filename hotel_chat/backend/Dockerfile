@@ -1,5 +1,7 @@
-# Production image serving the backend API, the Electric sync API (embedded)
-# and the built frontend as static assets — all from one origin.
+# Production image serving the backend API, the Electric sync proxy and the
+# built frontend as static assets — all from one origin. An
+# electricsql/electric container must run alongside (see docker-compose.yml
+# for the shape of it); ELECTRIC_URL/ELECTRIC_SECRET point this app at it.
 #
 # The build context is the project root (hotel_chat/) so both frontend/ and
 # backend/ are visible:
@@ -11,6 +13,8 @@
 #   docker run -p 4000:4000 \
 #     -e DATABASE_URL=ecto://postgres:postgres@host:5432/hotel_chat \
 #     -e SECRET_KEY_BASE=$(mix phx.gen.secret) \
+#     -e ELECTRIC_URL=http://electric:3000 \
+#     -e ELECTRIC_SECRET=... \
 #     hotel_chat
 
 ARG ELIXIR_IMAGE=hexpm/elixir:1.20.3-erlang-29.0.5-alpine-3.22.5

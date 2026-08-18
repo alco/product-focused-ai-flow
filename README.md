@@ -41,6 +41,8 @@ AI briefs and artifacts, in chronological order:
 | `2026-08-18-session-2-summary.md` | Session 2 summary: premise, decisions/forks, state of the frontend + architecture |
 | `../2026-08-18-3-backend-arch-ai-brief.md` | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
 | `2026-08-18-session-3-summary.md` | Session 3 summary: backend scaffold decisions/forks, verified state, open items |
+| `2026-08-18-data-model.md` | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review) |
+| `2026-08-18-shape-model.md` | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review) |
 
 **Roadmap:**
 
@@ -50,7 +52,8 @@ AI briefs and artifacts, in chronological order:
 - [x] Session 3: backend scaffold — Phoenix + embedded Electric sync, one-origin routing, Docker release workflow
 - [ ] Wire up frontend navigation between screens
 - [ ] Define TanstackDB collections for all types of entities with mock data
-- [ ] Data model: translate the session-1 entities (Company/Location/Member/Conversation/Message…) into migrations and sync shapes
+- [x] Data model design: session-1 entities (Company/Location/Member/Conversation/Message…) → table schema + per-screen shape catalog with index cross-check (docs awaiting review)
+- [ ] Data model implementation: migrations, Create/Update API endpoints + unit tests (after design review)
 - [ ] Frontend↔backend wiring: TanStack DB collections on `/api/sync/*` replacing `mock/data.ts`, auth on the `/api` pipeline
 - [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding
 - [ ] Production hardening: release migrations, Electric storage volume, media retention strategy

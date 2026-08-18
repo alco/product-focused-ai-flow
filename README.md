@@ -52,6 +52,8 @@ AI briefs and artifacts, in chronological order:
 | `agent_sessions/session-5-summary.md`                               | Session 5 summary: collections ↔ shape catalog mapping, derived-display refactor                   |
 | `../6-backend-data-model-ai-brief.md`                               | Brief for session 6: Ecto migrations + seed data, then swap mocks for live shapes                  |
 | `agent_sessions/session-6-summary.md`                               | Session 6 summary: migrations/schemas/seeds, all 10 shapes implemented, wired to Electric          |
+| `../7-feature-buildout.md`                                          | Brief for session 7: messaging write endpoints + optimistic mutations, desktop/mobile UI fixes     |
+| `agent_sessions/session-7-summary.md`                               | Session 7 summary: parallel-worktree build of the write path + UI fixes, merge, e2e verification   |
 
 **Roadmap:**
 
@@ -64,7 +66,8 @@ AI briefs and artifacts, in chronological order:
 - [x] Data model design: session-1 entities (Company/Location/Member/Conversation/Message…) → table schema + per-screen shape catalog with index cross-check (docs awaiting review)
 - [x] Data model implementation: migrations + seed data for all 13 tables (Create/Update write API + unit tests still pending)
 - [x] Frontend↔backend wiring: TanStack DB collections swapped from fixtures to live Electric shapes on `/api/sync/*`
-- [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding
-- [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession`), write API for mutations
+- [x] Feature build-out, messaging: write API (message/reply/reaction/announcement/new-conversation/mark-read) + TanStack optimistic mutations with txid tracking; desktop/mobile UI fixes
+- [ ] Feature build-out, remaining: notifications, onboarding/offboarding
+- [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession` and the temporary `?can_post_announcements` flag)
 - [ ] Production hardening: release migrations, Electric storage volume, media retention strategy
 - [ ] Pilot deployment

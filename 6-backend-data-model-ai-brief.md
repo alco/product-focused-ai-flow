@@ -12,3 +12,6 @@ Compared `hotel_chat/frontend/src/db/schema.ts` + `fixtures.ts` against `agent_a
 
 One specific case: `messages.deleted_at`/`deleted_by`/`deleted_kind` never need to be synced to the client at all. Once soft-delete lands, the backend authorizes shape access with a `WHERE deleted_at IS NULL` (or similar) clause in `HotelChat.Sync.Shapes` — deletion is enforced server-side by excluding the row from the shape, not by shipping a tombstone flag for the client to filter on.
 
+## Requesting shapes
+
+Now that the backend model is live, it's time to replace QueryCollections that use mock data with ElectricCollections in the frontend code.

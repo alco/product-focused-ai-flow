@@ -62,7 +62,11 @@ const shapeCollection = <T extends Row<unknown>>(
     electricCollectionOptions<T>({
       id: shape,
       shapeOptions: {
-        url: `/api/sync/${shape}`,
+        // Must be absolute: ShapeStream builds its fetch URL via `new
+        // URL(url)` with no base, which throws (as a swallowed rejected
+        // promise — no visible error, just zero requests) on a relative
+        // path, unlike fetch() itself which resolves relative URLs fine.
+        url: new URL(`/api/sync/${shape}`, window.location.origin).toString(),
         parser: withTimestamps ? { timestamp: timestampParser } : undefined,
       },
       getKey,

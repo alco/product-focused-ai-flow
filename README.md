@@ -23,7 +23,7 @@ Project outline:
 | Path | What it is |
 |------|------------|
 | `frontend/` | The frontend app (Vite + React + TanStack Router/DB) — currently static UI mockups, `pnpm dev` and open `/` for the screen index |
-| `backend/` | The Phoenix backend: custom API under `/api`, Electric's sync API under `/api/sync` (embedded via phoenix_sync), SPA serving with catch-all; `docker compose up -d` + `mix phx.server` for dev |
+| `backend/` | The Phoenix backend: custom API under `/api`, auth proxy for the Electric sync service under `/api/sync/:shape`, SPA serving with catch-all; `docker compose up -d` (Postgres + Electric) + `mix phx.server` for dev |
 | `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app |
 | `release.sh` | Release workflow: frontend build → `backend/priv/static` → mix release → self-contained Docker image serving API + sync + SPA from one origin |
 

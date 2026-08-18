@@ -10,7 +10,7 @@ The read path is Electric shapes end to end: every screen renders from TanStack 
 - **TanStack DB live queries join across collections on the client**, so a screen that combines three tables is three raw-table shapes plus a client-side join — never a display-composition column.
 - **Subset snapshots** keep high-volume shapes windowed: a messages shape loads the most recent N rows first (`requestSnapshot` with orderBy/limit), keeps syncing everything newer live, and pages older history on demand. Full-history sync never happens.
 - Together these three mechanisms leave the schema **fully normalized** (data-model doc, decision 3).
-- Shapes are exposed through the Phoenix router / `sync_render` controller, so `$me` (member id) and `$company` are injected server-side from the session — the client never sends them. This is also the authorization story: you can't ask for a shape the router won't build for you.
+- Electric runs as a **separate sync service with Phoenix as its authorizing proxy** (Electric's recommended pattern): the client names a shape (`GET /api/sync/:shape`), and `HotelChat.Sync.Shapes` resolves the name to a server-decided table/where/columns with `$me` (member id) and `$company` injected from the session — the client never supplies a where-clause, and the Electric API secret never leaves the server. This is the authorization story: you can't ask for a shape the proxy won't build for you.
 - Electric streams inserts/updates/deletes continuously after the snapshot; "cost" below is about the snapshot and subquery evaluation, which is what the indexes must serve.
 
 ## Shape catalog
@@ -76,16 +76,9 @@ Conclusion: **no missing indexes — and no shape-only indexes either.** Every i
 
 Write-path indexes are separate and already covered: `dm_key` partial unique (DM creation race), `(company_id, phone)` partials/lookups (login, invites), FK cascades.
 
-## Runtime requirements ⚠ (review decision)
+## Runtime requirements ✔ (resolved)
 
-The shape features this design leans on, versus what the backend scaffold currently runs (embedded electric **1.1.10**, pinned by phoenix_sync 0.6.1):
-
-| Feature | Current Electric | Our embedded 1.1.10 |
-|---|---|---|
-| Subqueries in where-clauses | ✅ GA | ✅ present, behind a feature flag — `config :electric, feature_flags: ["allow_subqueries"]` (verified: flows through `Electric.Application.api_plug_opts` into the embedded API) |
-| Subset snapshots (`requestSnapshot`, orderBy/limit, history paging) | ✅ | ❌ not in 1.1.10 |
-
-So S8's windowed loading needs one of: **(a)** lift the electric pin (`override: true` past phoenix_sync's `<= 1.1.10` constraint — compatibility with its embedded adapter unverified), **(b)** run current Electric as a separate service and switch phoenix_sync to `:http` mode (deviates from the brief's embedded mode), or **(c)** MVP fallback — a time-window where-clause (`conversation_id = $c AND inserted_at >= $t`, `$t` fixed at subscribe time, same composite index) with API-paginated older history, upgrading to subset snapshots when the pin lifts. The schema is identical in all three; this is purely a runtime/version decision. Also to verify at implementation time: phoenix_sync's `sync`/`sync_render` passing subquery where-clauses through unchanged, and TanStack DB's Electric collection exposing snapshot requests.
+An earlier revision carried a three-way version decision here: the backend then ran Electric *embedded* via phoenix_sync, whose dependency pin capped it at electric 1.1.10 — new enough for subqueries (behind a feature flag) but missing subset snapshots. Resolution (post-review): **phoenix_sync was removed entirely; Electric runs as a separate sync service on current 1.7.x behind the Phoenix auth proxy** (`docker compose` service + `HotelChatWeb.SyncController`). Verified against the running service: subqueries work with no feature flag, and the proxy passes the shape protocol through intact (initial snapshot, etag/electric-* headers, live long-poll delivery). Remaining implementation-time check: TanStack DB's Electric collection exposing snapshot requests for S8's windowed loading.
 
 ## Volume sanity check
 

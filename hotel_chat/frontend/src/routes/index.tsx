@@ -10,21 +10,19 @@ function MockupIndex() {
       <span className="eyebrow">UI Mockups</span>
       <h2 style={{ marginTop: '0.75rem' }}>Hotel Chat</h2>
       <p className="text-muted">
-        Static mockup pages, accessible by URL. No navigation, no backend, no data
-        sync — layout and visual language only.
+        Screens navigate for real now — resize the window to switch between the
+        mobile and desktop layouts.
       </p>
       <ul style={{ lineHeight: 2 }}>
-        <li><a href="/mobile/chats">/mobile/chats</a> — chat list (mobile home)</li>
-        <li><a href="/mobile/chat-group">/mobile/chat-group</a> — group conversation</li>
-        <li><a href="/mobile/chat-dm">/mobile/chat-dm</a> — 1-on-1 conversation</li>
-        <li><a href="/mobile/channel">/mobile/channel</a> — announcement channel (reader)</li>
-        <li><a href="/mobile/channel-manager">/mobile/channel-manager</a> — announcement channel (manager)</li>
-        <li><a href="/mobile/people">/mobile/people</a> — people directory</li>
-        <li><a href="/mobile/profile">/mobile/profile</a> — my profile / settings</li>
-        <li><a href="/mobile/new-chat">/mobile/new-chat</a> — new chat flow</li>
-        <li><a href="/mobile/onboarding">/mobile/onboarding</a> — invite → OTP onboarding</li>
-        <li><a href="/desktop">/desktop</a> — desktop shell, open conversation</li>
-        <li><a href="/desktop-empty">/desktop-empty</a> — desktop shell, nothing open</li>
+        <li><a href="/chats">/chats</a> — chat list (mobile) / sidebar + welcome (desktop)</li>
+        <li><a href="/chat/wedding-ops">/chat/wedding-ops</a> — group conversation</li>
+        <li><a href="/chat/dm-daniel">/chat/dm-daniel</a> — 1-on-1 conversation</li>
+        <li><a href="/chat/location-channel">/chat/location-channel</a> — announcement channel (reader)</li>
+        <li><a href="/mobile/channel-manager">/mobile/channel-manager</a> — announcement channel (manager, design preview only)</li>
+        <li><a href="/people">/people</a> — people directory</li>
+        <li><a href="/profile">/profile</a> — my profile / settings</li>
+        <li><a href="/new-chat">/new-chat</a> — new chat flow</li>
+        <li><a href="/onboarding">/onboarding</a> — invite → OTP onboarding</li>
       </ul>
     </div>
   )

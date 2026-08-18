@@ -79,13 +79,13 @@ function AnnouncementCard({
         {post.reactions.map((reaction) => (
           <span
             key={reaction.emoji}
-            className={reaction.mine ? 'reaction-chip reaction-chip--mine' : 'reaction-chip'}
+            className={reaction.mine ? 'ann-chip ann-chip--mine' : 'ann-chip'}
           >
             {reaction.emoji}
             <span className="reaction-count">{reaction.count}</span>
           </span>
         ))}
-        {showAddReaction && <span className="reaction-chip reaction-chip--add">+</span>}
+        {showAddReaction && <span className="ann-chip ann-chip--add">+</span>}
       </div>
     </article>
   )

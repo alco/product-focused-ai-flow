@@ -161,7 +161,7 @@
   margin-top: 0.75rem;
 }
 
-.reaction-chip {
+.ann-chip {
   align-items: center;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -173,24 +173,24 @@
   padding: 0.3125rem 0.625rem;
 }
 
-.reaction-count {
+.ann-chip .reaction-count {
   color: var(--subtle-foreground);
   font-family: var(--font-mono);
   font-size: 0.6875rem;
   font-weight: 500;
 }
 
-.reaction-chip--mine {
+.ann-chip--mine {
   background: var(--lime-100);
   border-color: var(--lime-600);
 }
 
-.reaction-chip--mine .reaction-count {
+.ann-chip--mine .reaction-count {
   color: var(--foreground);
 }
 
 /* Ghost add-reaction affordance (reader view only). */
-.reaction-chip--add {
+.ann-chip--add {
   border-style: dashed;
   color: var(--subtle-foreground);
   padding-inline: 0.75rem;
@@ -235,8 +235,8 @@
   margin: 0 0 0.5rem;
 }
 
-.composer-input,
-.composer-textarea {
+.ann-composer-input,
+.ann-composer-textarea {
   background: var(--background);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -249,16 +249,16 @@
   width: 100%;
 }
 
-.composer-input {
+.ann-composer-input {
   margin-bottom: 0.5rem;
 }
 
-.composer-textarea {
+.ann-composer-textarea {
   resize: none;
 }
 
-.composer-input::placeholder,
-.composer-textarea::placeholder {
+.ann-composer-input::placeholder,
+.ann-composer-textarea::placeholder {
   color: var(--subtle-foreground);
 }
 

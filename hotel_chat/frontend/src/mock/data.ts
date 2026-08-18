@@ -94,6 +94,18 @@ export const personById = (id: PersonId): Person => people.find((p) => p.id === 
 // --- Chat list (mobile home) ----------------------------------------------
 // Official first, then favorites, then the rest by recency. Long enough to scroll.
 
+// Emoji identity for group tiles (people DMs use the initials Avatar instead).
+export const groupEmoji: Record<string, string> = {
+  housekeeping: '🧹',
+  'wedding-ops': '💍',
+  'front-desk': '🛎️',
+  'fnb-crew': '🍽️',
+  'night-shift': '🌙',
+  maintenance: '🔧',
+  'reception-rota': '🔁',
+  'fire-wardens': '🧯',
+}
+
 export const officialChats: ChatListEntry[] = [
   {
     id: 'company-channel',
@@ -295,6 +307,7 @@ export const groupMessages: Message[] = [
   { id: 'g16', authorId: 'marco', text: 'Cake delivery just arrived, it is enormous. Fridge 2 cleared for it.', time: '10:47', reactions: [{ emoji: '🎂', count: 8, mine: true }, { emoji: '😍', count: 3 }] },
   { id: 'g17', authorId: 'omar', text: 'Can someone share the final table plan?', time: '11:02' },
   { id: 'g18', authorId: 'hannah', replyToId: 'g17', text: '@Priya can you print the table plan before 2? Copies for the ballroom door and the kitchen pass.', time: '11:38' },
+  { id: 'g19', authorId: 'priya', replyToId: 'g18', text: 'On it — printing four copies now, will drop them at the pass and the ballroom door by 1:30.', time: '11:41', reactions: [{ emoji: '🙌', count: 2 }] },
 ]
 
 // --- 1:1 conversation: Priya ↔ Daniel --------------------------------------

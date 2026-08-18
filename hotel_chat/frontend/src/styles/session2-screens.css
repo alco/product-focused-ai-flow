@@ -46,7 +46,7 @@
   position: relative;
 }
 
-.presence-dot {
+.presence-wrap .presence-dot {
   background: var(--lime-500);
   border: 2px solid var(--surface);
   border-radius: var(--radius-full);

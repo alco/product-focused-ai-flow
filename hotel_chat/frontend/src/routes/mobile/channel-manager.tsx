@@ -22,9 +22,9 @@ function ChannelManager() {
       </div>
       <footer className="channel-composer">
         <p className="composer-label">New announcement</p>
-        <input className="composer-input" type="text" placeholder="Title" readOnly />
+        <input className="ann-composer-input" type="text" placeholder="Title" readOnly />
         <textarea
-          className="composer-textarea"
+          className="ann-composer-textarea"
           rows={2}
           placeholder="Write your announcement…"
           readOnly

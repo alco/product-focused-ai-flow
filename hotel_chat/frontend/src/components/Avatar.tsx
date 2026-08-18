@@ -2,7 +2,7 @@
 
 const tints = [
   { bg: 'var(--sky-200)' },
-  { bg: 'var(--lime-200)' },
+  { bg: '#fef3c7' }, // amber-100 — lime stays reserved for the official signature
   { bg: '#ccfbf1' }, // teal-100
   { bg: '#fed7cf' }, // coral tint
   { bg: '#e0e7ff' }, // indigo-100

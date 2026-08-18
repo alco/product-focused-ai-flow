@@ -30,7 +30,7 @@ config :logger, :default_formatter,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-# Electric runs as a separate sync service (see docker-compose.yml); Phoenix
+# Electric runs as a separate sync service (see ../docker-compose.yml); Phoenix
 # proxies /api/sync/* to it, injecting server-decided shape definitions and
 # the API secret. Per-env url/secret live in dev.exs / test.exs / runtime.exs.
 

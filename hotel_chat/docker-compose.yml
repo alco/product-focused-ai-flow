@@ -1,8 +1,8 @@
 services:
   db:
     image: postgres:17-alpine
-    # Electric (embedded in the Phoenix app) consumes the logical replication
-    # stream, which requires wal_level=logical.
+    # Electric consumes the logical replication stream, which requires
+    # wal_level=logical.
     command: postgres -c wal_level=logical
     environment:
       POSTGRES_USER: postgres
@@ -22,8 +22,8 @@ services:
     image: electricsql/electric:1.7.11
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/hotel_chat_dev?sslmode=disable
-      # Must match config :hotel_chat, :electric in config/dev.exs. The
-      # Phoenix proxy attaches it server-side; the browser never sees it.
+      # Must match config :hotel_chat, :electric in backend/config/dev.exs.
+      # The Phoenix proxy attaches it server-side; the browser never sees it.
       ELECTRIC_SECRET: dev-electric-secret
     ports:
       # Bound to localhost: only the Phoenix proxy should reach it.
@@ -34,6 +34,23 @@ services:
       db:
         condition: service_healthy
 
+  # Local HTTP/2 terminator in front of the Vite dev server — see Caddyfile
+  # and the "HTTPS / HTTP2" section of README.md. Vite (and Phoenix behind
+  # it) run on the host via `pnpm dev` / `mix phx.server`, not in compose;
+  # extra_hosts is what lets the container reach back out to them.
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "5443:5443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 volumes:
   pgdata:
   electric_data:
+  caddy_data:
+  caddy_config:

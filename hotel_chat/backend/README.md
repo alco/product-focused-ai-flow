@@ -4,7 +4,7 @@ Phoenix app serving three things from one origin:
 
 - **Custom backend API** under `/api` (e.g. `GET /api/group_chats`)
 - **Electric shape protocol** under `/api/sync/:shape` — Electric runs as a
-  separate sync service (see `docker-compose.yml`); Phoenix is its
+  separate sync service (see `../docker-compose.yml`); Phoenix is its
   [authorizing proxy](https://electric.ax/docs/sync/guides/auth): the shape
   name resolves to a server-decided definition (`HotelChat.Sync.Shapes` —
   table/where/columns are never client-supplied) and the Electric API secret
@@ -16,37 +16,12 @@ Phoenix app serving three things from one origin:
 
 ## Dev workflow
 
-Two processes, no CORS needed:
-
-```sh
-# 1. Postgres (wal_level=logical) + the Electric sync service on :3000
-docker compose up -d
-
-# 2. Phoenix on :4000 (API only in dev)
-mix setup        # deps + db create/migrate (first time)
-mix phx.server
-
-# 3. Vite dev server on :5173 with HMR
-cd ../frontend && npm run dev
-```
-
-Point the browser at Vite (`:5173`). Vite's dev-server proxy must forward
-`/api` to Phoenix so everything is same-origin from the browser's
-perspective — the frontend's `vite.config.ts` needs:
-
-```ts
-export default defineConfig({
-  // ...
-  server: {
-    proxy: {
-      '/api': 'http://localhost:4000',
-    },
-  },
-})
-```
-
-Since the Electric sync routes live under `/api/sync`, the single `/api`
-proxy entry covers both the custom API and sync traffic.
+See `../README.md` for the full three-process dev workflow (`docker compose
+up` from `hotel_chat/`, `pnpm dev` in `frontend/`, `mix setup && mix
+phx.server` here) and the HTTP/2 dev-proxy setup. In short: `docker compose
+up` (from `hotel_chat/`) starts Postgres + Electric + a local Caddy HTTP/2
+terminator; `mix setup` (deps + db create/migrate/seed) then `mix
+phx.server` starts Phoenix on `:4000`.
 
 ## Release / deploy
 

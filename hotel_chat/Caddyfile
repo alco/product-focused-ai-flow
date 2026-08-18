@@ -1,0 +1,28 @@
+# Local HTTP/2 terminator in front of the Vite dev server, run as the
+# `caddy` service in docker-compose.yml.
+#
+# The browser only ever talks to Vite's origin (vite.config.ts proxies /api
+# to Phoenix server-side), and Vite's dev server has no HTTP/2 support of its
+# own — so a browser hitting :5173 directly is capped at 6 concurrent
+# connections per HTTP/1.1, which isn't enough once Electric shape requests
+# (long-lived GETs) stack up. Caddy terminates TLS with its own local CA and
+# negotiates HTTP/2 with the browser, then forwards plain HTTP/1.1 to Vite
+# underneath — only the browser-facing leg needs h2.
+#
+# Vite (and Phoenix behind it) run on the host, not in this compose file —
+# `host.docker.internal` reaches back out to the host from the container
+# (docker-compose.yml adds the extra_hosts entry Linux needs for this to
+# resolve; Docker Desktop on Mac/Windows supports it natively).
+#
+# One-time, on the host, to avoid a browser cert warning: extract Caddy's
+# local CA from the running container and trust it —
+# see the "HTTPS / HTTP2" section of ./README.md.
+{
+	# Skip the automatic :80 -> :443 HTTP redirect server: it needs a
+	# privileged port and we don't serve plain HTTP here anyway.
+	auto_https disable_redirects
+}
+
+localhost:5443 {
+	reverse_proxy host.docker.internal:5173
+}

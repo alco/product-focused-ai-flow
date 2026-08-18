@@ -99,10 +99,51 @@
   min-width: 0;
 }
 
+/* Row under the full-width top bar: chat column + members panel */
+.desktop-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.desktop-chat-col {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .desktop-convo {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+}
+
+/* Quick nav (People / Profile) at the right edge of content-area top bars */
+.topbar-nav {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.25rem;
+  margin-left: auto;
+}
+
+.topbar-nav-link {
+  align-items: center;
+  border-radius: var(--radius);
+  color: var(--muted-foreground);
+  display: inline-flex;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  text-decoration: none;
+}
+
+.topbar-nav-link:hover {
+  background: var(--muted);
+  color: var(--sona-dark);
+  text-decoration: none;
 }
 
 /* Full available width: bubbles cap their own width (.msg-col) and anchor
@@ -196,11 +237,15 @@
   font-size: 0.71875rem;
 }
 
-/* --- Empty state (/desktop-empty) ------------------------------------------ */
+/* --- Empty state (nothing open) --------------------------------------------- */
 
-.desktop-main--empty {
+/* Centers the welcome column under the content-area top bar */
+.desktop-empty-body {
   align-items: center;
+  display: flex;
+  flex: 1;
   justify-content: center;
+  min-height: 0;
   overflow-y: auto;
 }
 

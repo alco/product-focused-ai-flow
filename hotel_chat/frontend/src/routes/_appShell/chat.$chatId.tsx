@@ -1,8 +1,9 @@
 // frontend/src/routes/_appShell/chat.$chatId.tsx
 // Handles every chat-list row: group and DM conversations get the
 // message-thread screen (mobile: full phone chrome with a back chevron;
-// desktop: bare pane + members aside, both siblings of the sidebar the
-// _appShell layout renders). Company/location channels get the
+// desktop: full-width top bar over a transcript column + members aside,
+// all next to the sidebar the _appShell layout renders).
+// Company/location channels get the
 // announcement-feed screen (mobile: phone chrome; desktop: a bare pane with
 // the feed in a readable centered column).
 // Everything renders from the collections via useConversation.
@@ -15,6 +16,7 @@ import { ConversationTopBar } from '../../components/chat/ConversationTopBar'
 import { GroupTile } from '../../components/chat/GroupTile'
 import { MessageList } from '../../components/chat/MessageList'
 import { MembersPanel } from '../../components/desktop/MembersPanel'
+import { TopbarNav } from '../../components/desktop/TopbarNav'
 import { AnnouncementFeed } from '../../components/channel/AnnouncementFeed'
 import { ChannelTopbar } from '../../components/channel/ChannelTopbar'
 import { useIsDesktop } from '../../hooks/useIsDesktop'
@@ -100,7 +102,10 @@ function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop:
 
   return (
     <main className="desktop-main">
-      <ChannelTopbar channel={{ name: conversation.name ?? '', audience }} />
+      <ChannelTopbar
+        channel={{ name: conversation.name ?? '', audience }}
+        actions={<TopbarNav />}
+      />
       <div className="channel-scroll desktop-convo">
         <div className="desktop-feed">{feed}</div>
       </div>
@@ -148,6 +153,7 @@ function ConversationScreen({
       avatar={avatar}
       title={title}
       subtitle={subtitle}
+      actions={isDesktop ? <TopbarNav /> : undefined}
     />
   )
 
@@ -175,16 +181,22 @@ function ConversationScreen({
     )
   }
 
+  // The top bar spans the whole content area; the members panel starts
+  // immediately below it, alongside the transcript + composer column.
   return (
-    <>
-      <main className="desktop-main">
-        {topbar}
-        <div className="convo-scroll desktop-convo">
-          <div className="desktop-transcript">{transcript}</div>
+    <main className="desktop-main">
+      {topbar}
+      <div className="desktop-body">
+        <div className="desktop-chat-col">
+          <div className="convo-scroll desktop-convo">
+            <div className="desktop-transcript">{transcript}</div>
+          </div>
+          <Composer />
         </div>
-        <Composer />
-      </main>
-      {isGroup && data.rosterMembers.length > 0 && <MembersPanel members={data.rosterMembers} />}
-    </>
+        {isGroup && data.rosterMembers.length > 0 && (
+          <MembersPanel members={data.rosterMembers} />
+        )}
+      </div>
+    </main>
   )
 }

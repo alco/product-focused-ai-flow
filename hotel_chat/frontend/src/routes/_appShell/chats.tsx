@@ -6,6 +6,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { eq, useLiveQuery } from '@tanstack/react-db'
 import { ChatSections } from '../../components/ChatRow'
 import { TabBar } from '../../components/TabBar'
+import { TopbarNav } from '../../components/desktop/TopbarNav'
 import { useIsDesktop } from '../../hooks/useIsDesktop'
 import { useMe, useMyLocation } from '../../hooks/useSessionMember'
 import { conversationsCollection, messagesCollection } from '../../db/collections'
@@ -40,26 +41,31 @@ function ChatsRoute() {
   if (isDesktop) {
     const firstName = me?.name.split(' ')[0]
     return (
-      <main className="desktop-main desktop-main--empty">
-        <div className="desktop-welcome">
-          <span className="eyebrow">{location?.name}</span>
-          <h1 className="welcome-title">Good afternoon{firstName ? `, ${firstName}` : ''}</h1>
-          <p className="welcome-hint text-muted">
-            Pick a conversation from the sidebar to start chatting.
-          </p>
+      <main className="desktop-main">
+        <header className="topbar">
+          <TopbarNav />
+        </header>
+        <div className="desktop-empty-body">
+          <div className="desktop-welcome">
+            <span className="eyebrow">{location?.name}</span>
+            <h1 className="welcome-title">Good afternoon{firstName ? `, ${firstName}` : ''}</h1>
+            <p className="welcome-hint text-muted">
+              Pick a conversation from the sidebar to start chatting.
+            </p>
 
-          {channel && latest && (
-            <div className="card card-pad welcome-card">
-              <div className="welcome-card-top">
-                <span className="welcome-card-channel">📣 {channel.name}</span>
-                <span className="welcome-card-time">{timeLabel(latest.inserted_at)}</span>
+            {channel && latest && (
+              <div className="card card-pad welcome-card">
+                <div className="welcome-card-top">
+                  <span className="welcome-card-channel">📣 {channel.name}</span>
+                  <span className="welcome-card-time">{timeLabel(latest.inserted_at)}</span>
+                </div>
+                <div className="welcome-card-title">
+                  {latest.post_emoji} {latest.title}
+                </div>
+                <p className="welcome-card-text">{latest.body}</p>
               </div>
-              <div className="welcome-card-title">
-                {latest.post_emoji} {latest.title}
-              </div>
-              <p className="welcome-card-text">{latest.body}</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </main>
     )

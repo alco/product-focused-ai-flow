@@ -62,7 +62,7 @@ AI briefs and artifacts, in chronological order:
 - [x] Data model design: session-1 entities (Company/Location/Member/Conversation/Message…) → table schema + per-screen shape catalog with index cross-check (docs awaiting review)
 - [x] Data model implementation: migrations + seed data for all 13 tables (Create/Update write API + unit tests still pending)
 - [x] Frontend↔backend wiring: TanStack DB collections swapped from fixtures to live Electric shapes on `/api/sync/*`
-- [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession`), write API for mutations
 - [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding
+- [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession`), write API for mutations
 - [ ] Production hardening: release migrations, Electric storage volume, media retention strategy
 - [ ] Pilot deployment

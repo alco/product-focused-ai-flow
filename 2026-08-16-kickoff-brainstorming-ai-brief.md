@@ -1,4 +1,4 @@
-# 18 Aug 2026
+# Kickoff brainstorming
 
 Our job is to create a communications platform for hospitality businesses. They are trying to achieve two things:
 

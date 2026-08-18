@@ -1,27 +1,28 @@
 // Top bar for an open conversation: back chevron (optional), avatar, name,
 // subtitle. Reused by mobile conversation screens and the desktop shell
-// (desktop: omit backHref).
+// (desktop: omit backTo).
 
 import type { ReactNode } from 'react'
+import { Link } from '@tanstack/react-router'
 import '../../styles/conversation.css'
 
 export function ConversationTopBar({
-  backHref,
+  backTo,
   avatar,
   title,
   subtitle,
 }: {
-  backHref?: string
+  backTo?: string
   avatar?: ReactNode
   title: string
   subtitle?: ReactNode
 }) {
   return (
     <header className="topbar">
-      {backHref && (
-        <a className="back-chevron" href={backHref} aria-label="Back">
+      {backTo && (
+        <Link className="back-chevron" to={backTo} aria-label="Back">
           ‹
-        </a>
+        </Link>
       )}
       {avatar}
       <div style={{ minWidth: 0 }}>

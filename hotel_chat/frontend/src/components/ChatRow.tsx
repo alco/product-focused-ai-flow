@@ -1,6 +1,7 @@
 // Chat-list row + stacked sections, shared by the mobile chat list
-// (/mobile/chats) and the desktop sidebar. Static — rows are dead.
+// (/chats) and the desktop sidebar. Rows navigate to /chat/$chatId.
 
+import { Link } from '@tanstack/react-router'
 import { Avatar } from './Avatar'
 import { favoriteChats, groupEmoji, officialChats, recentChats } from '../mock/data'
 import type { ChatListEntry } from '../mock/data'
@@ -16,12 +17,13 @@ export function ChatRow({
   active?: boolean
 }) {
   const unread = chat.unread > 0
-  // "You: …" previews already carry their own prefix
   const authorPrefix =
     chat.lastAuthor && !chat.lastMessage.startsWith('You:') ? `${chat.lastAuthor}: ` : ''
 
   return (
-    <div
+    <Link
+      to="/chat/$chatId"
+      params={{ chatId: chat.id }}
       className={`chat-row${unread ? ' chat-row--unread' : ''}${active ? ' chat-row--active' : ''}`}
     >
       {chat.kind === 'dm' ? (
@@ -55,7 +57,7 @@ export function ChatRow({
           </span>
         ) : null}
       </div>
-    </div>
+    </Link>
   )
 }
 

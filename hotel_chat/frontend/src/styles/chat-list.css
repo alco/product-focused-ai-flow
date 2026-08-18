@@ -15,6 +15,16 @@
   color: #4d7c0f; /* lime-700, matches .pill--lime text */
 }
 
+/* Favorites get their own tinted band so they stand out between sections */
+.chat-section--favorites {
+  background: #f0f9ff; /* sky-50 — blue counterpart to the official lime band */
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-section--favorites .section-label {
+  color: #0369a1; /* sky-700 */
+}
+
 /* --- Rows ---------------------------------------------------------------- */
 
 .chat-row {

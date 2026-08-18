@@ -81,7 +81,7 @@ export function ChatSections({ activeChatId }: { activeChatId?: string }) {
         ))}
       </section>
 
-      <section className="chat-section">
+      <section className="chat-section chat-section--favorites">
         <div className="section-label">⭐ Favorites</div>
         {favorites.map((chat) => (
           <ChatRow key={chat.id} chat={chat} active={chat.id === activeChatId} />

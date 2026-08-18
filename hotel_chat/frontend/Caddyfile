@@ -1,0 +1,19 @@
+# Local HTTP/2 terminator in front of the Vite dev server.
+#
+# The browser only ever talks to Vite's origin (vite.config.ts proxies /api
+# to Phoenix server-side), and Vite's dev server has no HTTP/2 support of its
+# own — so a browser hitting :5173 directly is capped at 6 concurrent
+# connections per HTTP/1.1, which isn't enough once Electric shape requests
+# (long-lived GETs) stack up. Caddy terminates TLS with its own local CA
+# (`caddy trust`, one-time) and negotiates HTTP/2 with the browser, then
+# forwards plain HTTP/1.1 to Vite underneath — only the browser-facing leg
+# needs h2.
+{
+	# Skip the automatic :80 -> :443 HTTP redirect server: it needs a
+	# privileged port and we don't serve plain HTTP here anyway.
+	auto_https disable_redirects
+}
+
+localhost:5443 {
+	reverse_proxy localhost:5173
+}

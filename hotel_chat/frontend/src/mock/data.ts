@@ -19,6 +19,7 @@ export interface ChatListEntry {
   id: string
   kind: ChatKind
   name: string // for DMs: the other person's name
+  otherId?: PersonId // for kind: 'dm' — the other participant's id
   lastAuthor?: string // short first name, omitted for DMs/own messages
   lastMessage: string
   lastTime: string
@@ -143,6 +144,7 @@ export const favoriteChats: ChatListEntry[] = [
     id: 'dm-daniel',
     kind: 'dm',
     name: 'Daniel Okafor',
+    otherId: 'daniel',
     lastMessage: 'Can you cover the desk till 4? I owe you one',
     lastTime: '11:15',
     unread: 1,
@@ -175,6 +177,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-amira',
     kind: 'dm',
     name: 'Amira Haddad',
+    otherId: 'amira',
     lastMessage: 'Thanks for swapping with me yesterday 🙏',
     lastTime: '10:31',
     unread: 0,
@@ -194,6 +197,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-yuki',
     kind: 'dm',
     name: 'Yuki Tanaka',
+    otherId: 'yuki',
     lastMessage: 'Guest in 208 loved the museum tip, nice one!',
     lastTime: '09:12',
     unread: 0,
@@ -222,6 +226,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-marco',
     kind: 'dm',
     name: 'Marco Bellini',
+    otherId: 'marco',
     lastMessage: 'Staff meal today is lasagne, come early',
     lastTime: 'Yesterday',
     unread: 0,
@@ -230,6 +235,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-hannah',
     kind: 'dm',
     name: 'Hannah Lewis',
+    otherId: 'hannah',
     lastMessage: 'Sent you the AV checklist for the ballroom',
     lastTime: 'Yesterday',
     unread: 0,
@@ -248,6 +254,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-stefan',
     kind: 'dm',
     name: 'Stefan Weber',
+    otherId: 'stefan',
     lastMessage: 'Airport pickup confirmed for 14:30',
     lastTime: 'Tue',
     unread: 0,
@@ -266,6 +273,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-grace',
     kind: 'dm',
     name: 'Grace Adeyemi',
+    otherId: 'grace',
     lastMessage: 'Found a phone in 305, gave it to lost & found',
     lastTime: 'Mon',
     unread: 0,
@@ -274,6 +282,7 @@ export const recentChats: ChatListEntry[] = [
     id: 'dm-liam',
     kind: 'dm',
     name: "Liam O'Connor",
+    otherId: 'liam',
     lastMessage: 'See you at handover',
     lastTime: 'Sun',
     unread: 0,
@@ -335,6 +344,12 @@ export const locationChannel = {
   audience: 'Everyone at Harbourlight Bankside · 34 people',
 }
 
+export const companyChannel = {
+  id: 'company-channel',
+  name: company.name,
+  audience: 'Everyone at every Harbourlight property',
+}
+
 export const announcements: AnnouncementPost[] = [
   {
     id: 'a1',
@@ -369,3 +384,20 @@ export const announcements: AnnouncementPost[] = [
 ]
 
 export const companyChannelEntry = officialChats[0]
+
+// --- Id-based lookups for routing ------------------------------------------
+
+export const allChats: ChatListEntry[] = [...officialChats, ...favoriteChats, ...recentChats]
+
+export const chatEntryById = (id: string): ChatListEntry | undefined =>
+  allChats.find((c) => c.id === id)
+
+/**
+ * Full transcripts only exist for the two conversations built out in the
+ * mockup stage. Every other chat/DM id resolves to an empty transcript
+ * rather than fabricated messages.
+ */
+export const messagesByChatId: Record<string, Message[]> = {
+  [groupChat.id]: groupMessages,
+  [dmChat.id]: dmMessages,
+}

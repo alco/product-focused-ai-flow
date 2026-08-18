@@ -22,7 +22,7 @@ Project outline:
 
 | Path                   | What it is                                                                                                                                                                                                           |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frontend/`            | The frontend app (Vite + React + TanStack Router/DB) — UI mockups rendering from TanStack DB collections over fixture data, `pnpm dev` and open `/` for the screen index                                             |
+| `frontend/`            | The frontend app (Vite + React + TanStack Router/DB) — every screen renders from TanStack DB collections synced live from Postgres via Electric shapes, `pnpm dev` and open `/` for the screen index                 |
 | `backend/`             | The Phoenix backend: custom API under `/api`, auth proxy for the Electric sync service under `/api/sync/:shape`, SPA serving with catch-all; `docker compose up -d` (Postgres + Electric) + `mix phx.server` for dev |
 | `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app                                                                                                                                           |
 | `release.sh`           | Release workflow: frontend build → `backend/priv/static` → mix release → self-contained Docker image serving API + sync + SPA from one origin                                                                        |
@@ -48,6 +48,8 @@ AI briefs and artifacts, in chronological order:
 | `agent_sessions/session-4-summary.md`                               | Session 4 summary: premise, decisions/forks, navigation architecture as built                      |
 | `../5-tanstack-db-collections-with-mock-data-ai-brief.md`           | Brief for session 5: TanStack DB QueryCollections over hard-coded data                             |
 | `agent_sessions/session-5-summary.md`                               | Session 5 summary: collections ↔ shape catalog mapping, derived-display refactor                   |
+| `../6-backend-data-model-ai-brief.md`                               | Brief for session 6: Ecto migrations + seed data, then swap mocks for live shapes                  |
+| `agent_sessions/session-6-summary.md`                               | Session 6 summary: migrations/schemas/seeds, all 10 shapes implemented, wired to Electric          |
 
 **Roadmap:**
 
@@ -58,8 +60,9 @@ AI briefs and artifacts, in chronological order:
 - [x] Wire up frontend navigation between screens
 - [x] Define TanstackDB collections for all types of entities with mock data
 - [x] Data model design: session-1 entities (Company/Location/Member/Conversation/Message…) → table schema + per-screen shape catalog with index cross-check (docs awaiting review)
-- [ ] Data model implementation: migrations, Create/Update API endpoints + unit tests (after design review)
-- [ ] Frontend↔backend wiring: TanStack DB collections on `/api/sync/*` replacing `mock/data.ts`, auth on the `/api` pipeline
+- [x] Data model implementation: migrations + seed data for all 13 tables (Create/Update write API + unit tests still pending)
+- [x] Frontend↔backend wiring: TanStack DB collections swapped from fixtures to live Electric shapes on `/api/sync/*`
+- [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession`), write API for mutations
 - [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding
 - [ ] Production hardening: release migrations, Electric storage volume, media retention strategy
 - [ ] Pilot deployment

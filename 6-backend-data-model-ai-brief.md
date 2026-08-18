@@ -1,6 +1,6 @@
 # Creating the backend data model
 
-Now that we've finished the frontend work of setting up TanStack DB collections that use mock data, it's time to create backend migrations for the backend data model defined in hotel_chat/agent_artifacts/data-model.md and seed data that will replace the frontend mocks.
+It's time to create backend migrations for the backend data model defined in hotel_chat/agent_artifacts/data-model.md and seed data that will replace the frontend mocks.
 
 Before writing Ecto migrations, cross-check the entity types currently defined for the mock frontend data against the backend model sketch. Stop and tell me if you find inconsistencies.
 

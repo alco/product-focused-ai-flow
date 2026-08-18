@@ -34,23 +34,6 @@ services:
       db:
         condition: service_healthy
 
-  # Local HTTP/2 terminator in front of the Vite dev server — see Caddyfile
-  # and the "HTTPS / HTTP2" section of README.md. Vite (and Phoenix behind
-  # it) run on the host via `pnpm dev` / `mix phx.server`, not in compose;
-  # extra_hosts is what lets the container reach back out to them.
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "5443:5443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
 volumes:
   pgdata:
   electric_data:
-  caddy_data:
-  caddy_config:

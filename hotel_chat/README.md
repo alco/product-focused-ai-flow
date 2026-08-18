@@ -4,21 +4,21 @@ See the root [README](../README.md) for what this app is and the AI-brief/sessio
 
 ## Dev workflow
 
-Three processes, no CORS needed, one shared Postgres:
+One-time setup, then one script:
 
 ```sh
-# 1. From hotel_chat/: Postgres (wal_level=logical) + Electric sync service
-#    (:3000) + Caddy (:5443, HTTP/2 terminator — see below)
-docker compose up
+# 1. From hotel_chat/: Postgres (wal_level=logical) + Electric sync service (:3000)
+docker compose up -d
 
-# 2. From hotel_chat/frontend/: Vite dev server on :5173 with HMR
-pnpm install
-pnpm dev
+# 2. Install deps (first time only)
+(cd frontend && pnpm install)
+(cd backend && mix setup)   # deps.get + ecto.create/migrate + db.seed
 
-# 3. From hotel_chat/backend/: Phoenix on :4000 (API + sync proxy)
-mix setup        # deps.get + ecto.create/migrate + db.seed, first time only
-mix phx.server
+# 3. From hotel_chat/: Vite + Phoenix + Caddy together, Ctrl-C stops all three
+./run.sh
 ```
+
+`run.sh` starts `pnpm dev` (frontend/) and `mix phx.server` (backend/) in the background and Caddy in the foreground; killing it (Ctrl-C) tears down all three, including their child processes (Vite's node process, the BEAM VM) — see the script for the process-group mechanics. Run the three pieces by hand instead (`pnpm dev` in `frontend/`, `mix phx.server` in `backend/`, `caddy run --config Caddyfile` here) if you want them in separate terminals.
 
 Open **`https://localhost:5443`** (Caddy, see below) or plain `http://localhost:5173` (Vite directly — works fine, just capped at 6 concurrent HTTP/1.1 connections). Vite's dev-server proxy forwards `/api` to Phoenix so everything is same-origin from the browser's perspective (`vite.config.ts`'s `server.proxy`), and since Electric sync routes live under `/api/sync`, that one proxy entry covers both.
 
@@ -26,27 +26,15 @@ Open **`https://localhost:5443`** (Caddy, see below) or plain `http://localhost:
 
 ## HTTPS / HTTP2
 
-Electric shape requests are long-lived GETs, and once more than 6 are open at once, plain HTTP/1.1 (Vite's dev server, port 5173) starts queueing them — Chrome's per-origin connection cap. `docker compose up` also starts a `caddy` container (`Caddyfile`) that terminates TLS on `:5443` in front of Vite and negotiates HTTP/2 with the browser, lifting that cap. Vite itself has no HTTP/2 support to fall back on, so this is the only way to get it in dev.
+Electric shape requests are long-lived GETs, and once more than 6 are open at once, plain HTTP/1.1 (Vite's dev server, port 5173) starts queueing them — Chrome's per-origin connection cap. Caddy (`Caddyfile`, started by `run.sh`) terminates TLS on `:5443` in front of Vite and negotiates HTTP/2 with the browser, lifting that cap. Vite itself has no HTTP/2 support to fall back on, so this is the only way to get it in dev.
 
-Caddy issues itself a local CA and a cert for `localhost` automatically; the browser will show a self-signed-certificate warning until you trust that CA once:
+Caddy runs natively on the host here (not in Docker) specifically so it can install its local CA into the *host's* actual trust store — a containerized Caddy's CA lives in the container's own filesystem, which no browser on your host reads, and getting it out and trusted after the fact is fiddlier and less reliable than letting Caddy do it itself. The first time `run.sh` (or `caddy run`) generates that CA, Caddy tries to install it automatically and may prompt for your password. If it doesn't take (or you skipped the prompt), trust it explicitly once Caddy is running:
 
 ```sh
-# Extract Caddy's local root CA from the running container...
-docker compose cp caddy:/data/caddy/pki/authorities/local/root.crt /tmp/caddy-root.crt
-
-# ...then install it into your system/browser trust store. On Fedora/RHEL:
-sudo cp /tmp/caddy-root.crt /etc/pki/ca-trust/source/anchors/caddy-hotel-chat.crt
-sudo update-ca-trust
-
-# Debian/Ubuntu:
-sudo cp /tmp/caddy-root.crt /usr/local/share/ca-certificates/caddy-hotel-chat.crt
-sudo update-ca-certificates
-
-# macOS:
-sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain /tmp/caddy-root.crt
+caddy trust
 ```
 
-Firefox keeps its own certificate store separate from the OS on every platform — import `/tmp/caddy-root.crt` under Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import if you use it.
+If your browser still shows a warning after that, it's almost certainly Firefox — it keeps its own certificate store separate from the OS on every platform, so `caddy trust` doesn't reach it. Import the CA manually: find it at `~/.local/share/caddy/pki/authorities/local/root.crt` (Linux) or `~/Library/Application Support/Caddy/pki/authorities/local/root.crt` (macOS), then Firefox Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import.
 
 Skip all of this and just use `http://localhost:5173` if you don't need >6 concurrent shape requests (e.g. one or two open conversations) — the app works identically either way, just without HTTP/2.
 

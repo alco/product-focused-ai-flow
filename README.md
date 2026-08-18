@@ -24,7 +24,8 @@ Project outline:
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `frontend/`            | The frontend app (Vite + React + TanStack Router/DB) — every screen renders from TanStack DB collections synced live from Postgres via Electric shapes, `pnpm dev` and open `/` for the screen index                 |
 | `backend/`             | The Phoenix backend: custom API under `/api`, auth proxy for the Electric sync service under `/api/sync/:shape`, SPA serving with catch-all; `mix setup && mix phx.server` for dev                                   |
-| `docker-compose.yml`   | Dev-only Postgres + Electric + a local Caddy HTTP/2 terminator; `docker compose up`, see `README.md`                                                                                                                  |
+| `docker-compose.yml`   | Dev-only Postgres + Electric; `docker compose up -d`, see `README.md`                                                                                                                                                 |
+| `run.sh`               | Dev runner: frontend + backend + a local Caddy HTTP/2 terminator together, Ctrl-C stops all three; see `README.md`                                                                                                    |
 | `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app                                                                                                                                           |
 | `release.sh`           | Release workflow: frontend build → `backend/priv/static` → mix release → self-contained Docker image serving API + sync + SPA from one origin                                                                        |
 

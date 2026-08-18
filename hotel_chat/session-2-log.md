@@ -1,6 +1,6 @@
 # Session 2 log — UI mockups & frontend scaffold — 2026-08-18
 
-Brief: `../2026-08-18-ui-mockup-ai-brief.md`. Oleksii observing; Claude executing autonomously with parallel subagents.
+Brief: `../2-ui-mockup-ai-brief.md`. Oleksii observing; Claude executing autonomously with parallel subagents.
 
 ## Scaffold decisions
 

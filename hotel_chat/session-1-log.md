@@ -80,4 +80,4 @@ Format: 10 warm-up rounds. Claude suggests/asks, Oleksii steers. Goal: map MVP s
 - Implication recorded: **PII erasure is an anticipated operation** on member records (scrub identity, preserve message rows) — schema should not make this impossible.
 
 ## Session 1 closed
-- All 10 rounds complete. Summary document: `2026-08-18-session-1-summary.md`. Next session: tech stack introduction, iterate toward implementation plan; mockups/visual companion available from next session onward.
+- All 10 rounds complete. Summary document: `session-1-summary.md`. Next session: tech stack introduction, iterate toward implementation plan; mockups/visual companion available from next session onward.

@@ -1,8 +1,8 @@
 # UI mockup (and frontend codebase setup)
 
-Now that we have established the product vision and defined the scope for the MVP in 2028-08-18-session-1-summary.md it is time to decide what the MVP will look like and start shaping up the code structure.
+Now that we have established the product vision and defined the scope for the MVP in `hotel_chat/session-1-summary.md`, it is time to decide what the MVP will look like and start shaping up the code structure.
 
-2026-08-18-session-2-prep.md should be your starting point for getting into the right mindset for this session
+`hotel_chat/session-2-prep.md` should be your starting point for getting into the right mindset for this session.
 
 At a high level, we'll have separate directories for the frontend (hotel_chat/frontend) and backend (hotel_chat/backend). Our frontend tech stack:
 
@@ -42,4 +42,3 @@ Let's define some constraints and rough ordering in which you'll be building the
 As the main agent, I trust that you can setup the project scaffolding and then spin up parallel agents to work on individual screens/pages. Your job will be to review subagents' work and ensure consistent execution across the whole UI: that is, you may need to spawn another subagent to fix up the work already done but its predecessor.
 
 Only ping me with questions in case you hit a genuine roadblock and need human input. I'll be observing you from the shadows.
-

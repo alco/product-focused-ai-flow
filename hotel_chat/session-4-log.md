@@ -1,6 +1,6 @@
 # Hotel Chat — Session 4 Log: Navigation Wiring Implementation
 
-**Format:** parallel subagent-driven execution of `2026-08-18-session-4-navigation-wiring-implementation-plan.md`, Oleksii observing.
+**Format:** parallel subagent-driven execution of `session-4-navigation-wiring-implementation-plan.md`, Oleksii observing.
 
 ## Setup
 

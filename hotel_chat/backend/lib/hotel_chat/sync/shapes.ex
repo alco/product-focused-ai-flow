@@ -8,7 +8,7 @@ defmodule HotelChat.Sync.Shapes do
   read path: a client can only sync data a definition below hands it, scoped
   by its own session.
 
-  The full planned catalog (S1–S10) lives in 2026-08-18-shape-model.md and
+  The full planned catalog (S1–S10) lives in hotel_chat/shape-model.md and
   gets implemented here as its tables land. `session` is the authenticated
   context (member id, company id); until auth exists it is an empty map and
   only unscoped demo shapes are defined.

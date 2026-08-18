@@ -1,6 +1,6 @@
 # Hotel Chat — Session 4 Summary: Navigation Wiring
 
-**Date:** 2026-08-18 · **Format:** two-question architecture discussion, a written implementation plan, then parallel subagent-driven execution across two git worktrees, Oleksii observing · **Companion log:** `2026-08-18-session-4-log.md` · **Plan:** `2026-08-18-session-4-navigation-wiring-implementation-plan.md` · **Previous:** `2026-08-18-session-3-summary.md`, `2026-08-18-data-model.md` / `2026-08-18-shape-model.md`
+**Date:** 2026-08-18 · **Format:** two-question architecture discussion, a written implementation plan, then parallel subagent-driven execution across two git worktrees, Oleksii observing · **Companion log:** `session-4-log.md` · **Plan:** `session-4-navigation-wiring-implementation-plan.md` · **Previous:** `session-3-summary.md`, `data-model.md` / `shape-model.md`
 
 ## 1. Premise
 

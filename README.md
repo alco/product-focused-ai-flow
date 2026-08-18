@@ -4,10 +4,10 @@ A working repository for designing and building products through structured huma
 
 ## How it works
 
-1. **Brief.** Each stage starts with a dated, numbered brief at the repo root (`YYYY-MM-DD-N-<topic>-ai-brief.md`) written by the human: the goals, the constraints, the open questions, and what the AI's jobs are during the sessions.
+1. **Brief.** Each stage starts with a numbered brief at the repo root (`N-<topic>-ai-brief.md`) written by the human: the goals, the constraints, the open questions, and what the AI's jobs are during the sessions.
 2. **Brainstorming sessions.** The AI proposes options and asks clarifying questions — one at a time, usually with a recommendation — and the human steers every decision. Sessions run in rounds (10 per session as the working default). Nothing is implemented during brainstorming; the output is decisions.
-3. **Session log.** During each session the AI maintains `YYYY-MM-DD-session-N-log.md`: every round's options, the decision taken, and the reasoning — including backtracks, where a notion from the brief or an earlier round gets revised or thrown out.
-4. **Session summary.** At the end of each session the AI produces `YYYY-MM-DD-session-N-summary.md` covering (1) the premise, (2) the key decisions and forks in the road, and (3) the product vision so far with the conceptual architecture for the implementation.
+3. **Session log.** During each session the AI maintains `session-N-log.md`: every round's options, the decision taken, and the reasoning — including backtracks, where a notion from the brief or an earlier round gets revised or thrown out.
+4. **Session summary.** At the end of each session the AI produces `session-N-summary.md` covering (1) the premise, (2) the key decisions and forks in the road, and (3) the product vision so far with the conceptual architecture for the implementation.
 5. **Onward to building.** Later sessions layer in UI mockups, the tech stack, and an implementation plan — each with the same log + summary discipline — until building starts.
 
 All artifacts are committed to this repo as they're produced, so the full decision history is replayable from Git.
@@ -29,23 +29,23 @@ Project outline:
 
 AI briefs and artifacts, in chronological order:
 
-| File                                                            | What it is                                                                                         |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `../2026-08-18-1-kickoff-brainstorming-ai-brief.md`             | The original brief: goals, scope boundaries, session format                                        |
-| `2026-08-18-session-1-log.md`                                   | Session 1 round-by-round decision log (scope + feature set)                                        |
-| `2026-08-18-session-1-summary.md`                               | Session 1 summary: premise, decisions/forks, vision + conceptual architecture                      |
-| `2026-08-18-session-2-prep.md`                                  | Agenda and inputs for session 2 (UI mockups)                                                       |
-| `../2026-08-18-2-ui-mockup-ai-brief.md`                         | Brief for session 2: mockup goals + the frontend stack                                             |
-| `2026-08-18-brand-guidelines.md`                                | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns                     |
-| `2026-08-18-session-2-log.md`                                   | Session 2 log: frontend scaffold decisions, parallel mockup build, review findings                 |
-| `2026-08-18-session-2-summary.md`                               | Session 2 summary: premise, decisions/forks, state of the frontend + architecture                  |
-| `../2026-08-18-3-backend-arch-ai-brief.md`                      | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
-| `2026-08-18-session-3-summary.md`                               | Session 3 summary: backend scaffold decisions/forks, verified state, open items                    |
-| `2026-08-18-data-model.md`                                      | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review)                            |
-| `2026-08-18-shape-model.md`                                     | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review)           |
-| `2026-08-18-session-4-navigation-wiring-implementation-plan.md` | Session 4 implementation plan: responsive routing architecture, task-by-task build                 |
-| `2026-08-18-session-4-log.md`                                   | Session 4 log: parallel-worktree execution, merge, integration verification                        |
-| `2026-08-18-session-4-summary.md`                               | Session 4 summary: premise, decisions/forks, navigation architecture as built                      |
+| File                                                 | What it is                                                                                         |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `../1-kickoff-brainstorming-ai-brief.md`             | The original brief: goals, scope boundaries, session format                                        |
+| `session-1-log.md`                                   | Session 1 round-by-round decision log (scope + feature set)                                        |
+| `session-1-summary.md`                               | Session 1 summary: premise, decisions/forks, vision + conceptual architecture                      |
+| `session-2-prep.md`                                  | Agenda and inputs for session 2 (UI mockups)                                                       |
+| `../2-ui-mockup-ai-brief.md`                         | Brief for session 2: mockup goals + the frontend stack                                             |
+| `brand-guidelines.md`                                | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns                     |
+| `session-2-log.md`                                   | Session 2 log: frontend scaffold decisions, parallel mockup build, review findings                 |
+| `session-2-summary.md`                               | Session 2 summary: premise, decisions/forks, state of the frontend + architecture                  |
+| `../3-backend-arch-ai-brief.md`                      | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
+| `session-3-summary.md`                               | Session 3 summary: backend scaffold decisions/forks, verified state, open items                    |
+| `data-model.md`                                      | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review)                            |
+| `shape-model.md`                                     | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review)           |
+| `session-4-navigation-wiring-implementation-plan.md` | Session 4 implementation plan: responsive routing architecture, task-by-task build                 |
+| `session-4-log.md`                                   | Session 4 log: parallel-worktree execution, merge, integration verification                        |
+| `session-4-summary.md`                               | Session 4 summary: premise, decisions/forks, navigation architecture as built                      |
 
 **Roadmap:**
 

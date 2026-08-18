@@ -1,6 +1,6 @@
 # Hotel Chat — Brainstorming Session 1 Summary
 
-**Date:** 2026-08-18 · **Participants:** Oleksii (steering), Claude (suggestions/questions) · **Format:** 10 rounds, text-only · **Companion log:** `2026-08-18-session-1-log.md`
+**Date:** 2026-08-18 · **Participants:** Oleksii (steering), Claude (suggestions/questions) · **Format:** 10 rounds, text-only · **Companion log:** `session-1-log.md`
 
 ## 1. Premise
 

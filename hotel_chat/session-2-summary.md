@@ -1,10 +1,10 @@
 # Hotel Chat — Session 2 Summary: UI Mockups & Frontend Scaffold
 
-**Date:** 2026-08-18 · **Format:** autonomous execution by Claude with parallel subagents, Oleksii observing · **Companion log:** `2026-08-18-session-2-log.md` · **Previous:** `2026-08-18-session-1-summary.md`
+**Date:** 2026-08-18 · **Format:** autonomous execution by Claude with parallel subagents, Oleksii observing · **Companion log:** `session-2-log.md` · **Previous:** `session-1-summary.md`
 
 ## 1. Premise
 
-With the MVP scope fixed in session 1 and the brand distilled from sona.ai into `2026-08-18-brand-guidelines.md` + `brand/sona-brand.css`, this session had two jobs from the UI-mockup brief: stand up a working frontend project on the chosen stack (React, TanStack Router — not Start, TanStack DB v0.6+, Vite, TypeScript), and build static mockups of every MVP screen, each reachable by URL with no navigation wiring, no backend, and no data — honing the client's UX before any logic exists. Parallel subagents build individual screens; the main agent enforces consistency.
+With the MVP scope fixed in session 1 and the brand distilled from sona.ai into `brand-guidelines.md` + `brand/sona-brand.css`, this session had two jobs from the UI-mockup brief: stand up a working frontend project on the chosen stack (React, TanStack Router — not Start, TanStack DB v0.6+, Vite, TypeScript), and build static mockups of every MVP screen, each reachable by URL with no navigation wiring, no backend, and no data — honing the client's UX before any logic exists. Parallel subagents build individual screens; the main agent enforces consistency.
 
 ## 2. Key decisions and forks in the road
 
@@ -51,4 +51,4 @@ The seam for the next stage is explicit: screens consume mock constants exactly 
 - Desktop `search-field`/stone-scroll rules could graduate into `app.css`.
 - Product name still open (mockups use the customer's own brand, "Harbourlight", for the wordmark moment).
 
-**Next session:** backend architecture (`2026-08-18-backend-arch-ai-brief.md` pending in the repo root; `hotel_chat/backend/` directory created).
+**Next session:** backend architecture (`../3-backend-arch-ai-brief.md`; `hotel_chat/backend/` directory created).

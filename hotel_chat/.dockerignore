@@ -1,0 +1,9 @@
+# Build context for backend/Dockerfile is this directory.
+.git
+**/node_modules
+frontend/dist
+backend/_build
+backend/deps
+backend/priv/static
+backend/.elixir_ls
+backend/.lexical

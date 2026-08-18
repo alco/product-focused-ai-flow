@@ -1,10 +1,11 @@
 // Chat-list row + stacked sections, shared by the mobile chat list
 // (/chats) and the desktop sidebar. Rows navigate to /chat/$chatId.
+// Everything shown here is derived from the collections via useChatList.
 
 import { Link } from '@tanstack/react-router'
 import { Avatar } from './Avatar'
-import { favoriteChats, groupEmoji, officialChats, recentChats } from '../mock/data'
-import type { ChatListEntry } from '../mock/data'
+import { useChatList } from '../hooks/useChatList'
+import type { ChatListItem } from '../hooks/useChatList'
 import '../styles/chat-list.css'
 
 export function ChatRow({
@@ -12,13 +13,11 @@ export function ChatRow({
   official,
   active,
 }: {
-  chat: ChatListEntry
+  chat: ChatListItem
   official?: boolean
   active?: boolean
 }) {
   const unread = chat.unread > 0
-  const authorPrefix =
-    chat.lastAuthor && !chat.lastMessage.startsWith('You:') ? `${chat.lastAuthor}: ` : ''
 
   return (
     <Link
@@ -26,16 +25,16 @@ export function ChatRow({
       params={{ chatId: chat.id }}
       className={`chat-row${unread ? ' chat-row--unread' : ''}${active ? ' chat-row--active' : ''}`}
     >
-      {chat.kind === 'dm' ? (
-        <Avatar name={chat.name} />
+      {chat.isDm ? (
+        <Avatar name={chat.title} />
       ) : (
         <span className={`chat-tile${official ? ' chat-tile--official' : ''}`} aria-hidden>
-          {official ? '📣' : (groupEmoji[chat.id] ?? '👥')}
+          {official ? '📣' : (chat.emoji ?? '👥')}
         </span>
       )}
       <div className="chat-main">
         <div className="chat-name-row">
-          <span className="chat-name">{chat.name}</span>
+          <span className="chat-name">{chat.title}</span>
           {chat.favorite && (
             <span className="chat-flag" aria-hidden>
               ⭐
@@ -43,12 +42,18 @@ export function ChatRow({
           )}
         </div>
         <div className="chat-preview">
-          {authorPrefix}
-          {chat.lastMessage}
+          {chat.preview ? (
+            <>
+              {chat.preview.prefix && `${chat.preview.prefix}: `}
+              {chat.preview.text}
+            </>
+          ) : (
+            'No messages yet'
+          )}
         </div>
       </div>
       <div className="chat-meta">
-        <span className="chat-time">{chat.lastTime}</span>
+        {chat.timeLabel && <span className="chat-time">{chat.timeLabel}</span>}
         {unread ? (
           <span className="unread-badge">{chat.unread}</span>
         ) : chat.muted ? (
@@ -62,25 +67,27 @@ export function ChatRow({
 }
 
 export function ChatSections({ activeChatId }: { activeChatId?: string }) {
+  const { official, favorites, rest } = useChatList()
+
   return (
     <>
       <section className="chat-section chat-section--official">
         <div className="section-label">📌 Official</div>
-        {officialChats.map((chat) => (
+        {official.map((chat) => (
           <ChatRow key={chat.id} chat={chat} official active={chat.id === activeChatId} />
         ))}
       </section>
 
       <section className="chat-section">
         <div className="section-label">⭐ Favorites</div>
-        {favoriteChats.map((chat) => (
+        {favorites.map((chat) => (
           <ChatRow key={chat.id} chat={chat} active={chat.id === activeChatId} />
         ))}
       </section>
 
       <section className="chat-section">
         <div className="section-label">All chats</div>
-        {recentChats.map((chat) => (
+        {rest.map((chat) => (
           <ChatRow key={chat.id} chat={chat} active={chat.id === activeChatId} />
         ))}
       </section>

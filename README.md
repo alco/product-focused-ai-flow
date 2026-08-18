@@ -48,6 +48,8 @@ AI briefs and artifacts, in chronological order:
 - [x] Brand research → guidelines + shared stylesheet
 - [x] Session 2: UI mockups + frontend scaffold
 - [x] Session 3: backend scaffold — Phoenix + embedded Electric sync, one-origin routing, Docker release workflow
+- [ ] Wire up frontend navigation between screens
+- [ ] Define TanstackDB collections for all types of entities with mock data
 - [ ] Data model: translate the session-1 entities (Company/Location/Member/Conversation/Message…) into migrations and sync shapes
 - [ ] Frontend↔backend wiring: TanStack DB collections on `/api/sync/*` replacing `mock/data.ts`, auth on the `/api` pipeline
 - [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding

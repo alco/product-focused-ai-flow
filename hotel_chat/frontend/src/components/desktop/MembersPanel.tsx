@@ -1,34 +1,36 @@
 // frontend/src/components/desktop/MembersPanel.tsx
-// Desktop-only members list for an open group conversation.
+// Desktop-only members list for an open group conversation. Takes directory
+// rows; online dots come from the presence stub (ephemeral, not a collection).
 
 import { Avatar } from '../Avatar'
-import type { Person } from '../../mock/data'
+import { onlineMemberIds } from '../../db/presence'
+import type { Member } from '../../db/schema'
 
-function MemberRow({ person }: { person: Person }) {
+function MemberRow({ member }: { member: Member }) {
   return (
     <li className="member-row">
       <span className="member-avatar">
-        <Avatar name={person.name} size={32} />
-        {person.online && <span className="member-dot" aria-hidden />}
+        <Avatar name={member.name} size={32} />
+        {onlineMemberIds.has(member.id) && <span className="member-dot" aria-hidden />}
       </span>
       <div className="member-main">
         <div className="member-name-row">
-          <span className="member-name">{person.name}</span>
-          {person.role === 'manager' && <span className="pill pill--stone">Manager</span>}
+          <span className="member-name">{member.name}</span>
+          {member.role === 'manager' && <span className="pill pill--stone">Manager</span>}
         </div>
-        <div className="member-title">{person.jobTitle}</div>
+        <div className="member-title">{member.job_title}</div>
       </div>
     </li>
   )
 }
 
-export function MembersPanel({ members }: { members: Person[] }) {
+export function MembersPanel({ members }: { members: Member[] }) {
   return (
     <aside className="desktop-members">
       <div className="section-label">Members — {members.length}</div>
       <ul className="member-list">
-        {members.map((person) => (
-          <MemberRow key={person.id} person={person} />
+        {members.map((member) => (
+          <MemberRow key={member.id} member={member} />
         ))}
       </ul>
     </aside>

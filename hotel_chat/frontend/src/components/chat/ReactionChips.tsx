@@ -1,7 +1,7 @@
-import type { Reaction } from '../../mock/data'
+import type { ReactionChip } from '../../db/derive'
 import '../../styles/conversation.css'
 
-export function ReactionChips({ reactions }: { reactions: Reaction[] }) {
+export function ReactionChips({ reactions }: { reactions: ReactionChip[] }) {
   return (
     <div className="reaction-row">
       {reactions.map((r) => (

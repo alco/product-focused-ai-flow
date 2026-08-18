@@ -1,0 +1,284 @@
+/* Announcement channel screens (/mobile/channel, /mobile/channel-manager).
+   Broadcast/bulletin look: full-width cards on stone, deliberately NOT chat
+   bubbles. Brand tokens come from hotel_chat/brand/sona-brand.css. */
+
+/* --- Topbar additions ---------------------------------------------------- */
+
+.channel-glyph {
+  align-items: center;
+  background: var(--lime-100);
+  border: 1px solid var(--lime-200);
+  border-radius: var(--radius);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.channel-topbar-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.channel-official-tag {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  gap: 0.375rem;
+}
+
+/* --- Feed ----------------------------------------------------------------- */
+
+/* The feed sits on stone so the white cards read as pinned notices. */
+.channel-scroll {
+  background: var(--background);
+}
+
+.channel-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1rem 1.5rem;
+}
+
+/* Day group header: mono, centered between hairlines. */
+.channel-day {
+  align-items: center;
+  color: var(--subtle-foreground);
+  display: flex;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  gap: 0.75rem;
+  letter-spacing: 0.15em;
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+}
+
+.channel-day::before,
+.channel-day::after {
+  background: var(--border);
+  content: "";
+  flex: 1;
+  height: 1px;
+}
+
+.channel-day:first-child {
+  margin-top: 0;
+}
+
+/* --- Announcement card ---------------------------------------------------- */
+
+.post-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
+}
+
+.post-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.post-label {
+  color: var(--lime-600);
+  font-size: 0.625rem;
+  gap: 0.375rem;
+}
+
+.post-edit {
+  color: var(--subtle-foreground);
+  font-size: 0.8125rem;
+  line-height: 1;
+}
+
+.post-emoji {
+  display: block;
+  font-size: 1.75rem;
+  line-height: 1.2;
+  margin-bottom: 0.375rem;
+}
+
+.post-title {
+  color: var(--sona-dark);
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0 0 0.375rem;
+}
+
+.post-body {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.post-author {
+  align-items: center;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+}
+
+.post-author-name {
+  color: var(--sona-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.post-author-role {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-time {
+  color: var(--subtle-foreground);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  margin-left: auto;
+}
+
+/* --- Reactions ------------------------------------------------------------ */
+
+.post-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+
+.reaction-chip {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  font-size: 0.8125rem;
+  gap: 0.3125rem;
+  line-height: 1;
+  padding: 0.3125rem 0.625rem;
+}
+
+.reaction-count {
+  color: var(--subtle-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+
+.reaction-chip--mine {
+  background: var(--lime-100);
+  border-color: var(--lime-600);
+}
+
+.reaction-chip--mine .reaction-count {
+  color: var(--foreground);
+}
+
+/* Ghost add-reaction affordance (reader view only). */
+.reaction-chip--add {
+  border-style: dashed;
+  color: var(--subtle-foreground);
+  padding-inline: 0.75rem;
+}
+
+/* --- Reader footer: informative, not a composer --------------------------- */
+
+.channel-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  bottom: 0;
+  padding: 0.875rem 1rem calc(0.875rem + env(safe-area-inset-bottom));
+  position: sticky;
+  text-align: center;
+  z-index: 10;
+}
+
+.channel-footer-note {
+  color: var(--subtle-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* --- Manager composer ------------------------------------------------------ */
+
+.channel-composer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  bottom: 0;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  position: sticky;
+  z-index: 10;
+}
+
+.composer-label {
+  color: var(--sona-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.composer-input,
+.composer-textarea {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--foreground);
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+}
+
+.composer-input {
+  margin-bottom: 0.5rem;
+}
+
+.composer-textarea {
+  resize: none;
+}
+
+.composer-input::placeholder,
+.composer-textarea::placeholder {
+  color: var(--subtle-foreground);
+}
+
+.composer-foot {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  margin-top: 0.625rem;
+}
+
+.composer-as {
+  color: var(--subtle-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  line-height: 1.4;
+}
+
+.composer-post-btn {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  padding: 0.5rem 1.125rem;
+}

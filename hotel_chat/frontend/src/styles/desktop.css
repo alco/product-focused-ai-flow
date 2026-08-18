@@ -115,6 +115,13 @@
   padding: 0.75rem 1.5rem 1.5rem;
 }
 
+/* Announcement cards keep a readable column width in the wide pane */
+.desktop-feed {
+  margin-inline: auto;
+  max-width: 46rem;
+  width: 100%;
+}
+
 /* --- Members panel --------------------------------------------------------- */
 
 .desktop-members {

@@ -3,8 +3,8 @@
 // message-thread screen (mobile: full phone chrome with a back chevron;
 // desktop: bare pane + members aside, both siblings of the sidebar the
 // _appShell layout renders). Company/location channels get the
-// announcement-feed screen, which only has a mobile design so far — it
-// renders the same phone chrome regardless of viewport (known gap).
+// announcement-feed screen (mobile: phone chrome; desktop: a bare pane with
+// the feed in a readable centered column).
 // Everything renders from the collections via useConversation.
 import { createFileRoute } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
@@ -49,7 +49,7 @@ function ChatRoute() {
   const isChannel =
     data.conversation.kind === 'company_channel' || data.conversation.kind === 'location_channel'
   if (isChannel) {
-    return <ChannelScreen data={data} />
+    return <ChannelScreen data={data} isDesktop={isDesktop} />
   }
 
   return <ConversationScreen data={data} isDesktop={isDesktop} />
@@ -57,7 +57,7 @@ function ChatRoute() {
 
 type ConversationData = ReturnType<typeof useConversation>
 
-function ChannelScreen({ data }: { data: ConversationData }) {
+function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop: boolean }) {
   const conversation = data.conversation!
   const { data: locations } = useLiveQuery((q) => q.from({ l: locationsCollection }))
 
@@ -68,27 +68,44 @@ function ChannelScreen({ data }: { data: ConversationData }) {
       : session.companyName
   const audience = `Everyone at ${scopeName} · ${data.roster.length} people`
 
-  return (
-    <div className="phone">
-      <ChannelTopbar channel={{ name: conversation.name ?? '', audience }} />
-      <div className="phone-scroll channel-scroll">
-        {data.messages.length > 0 ? (
-          <AnnouncementFeed
-            posts={data.messages}
-            reactions={data.reactions}
-            membersById={data.membersById}
-            showAddReaction
-          />
-        ) : (
-          <p className="text-muted" style={{ padding: '1.5rem' }}>
-            No announcements yet.
-          </p>
-        )}
+  const feed =
+    data.messages.length > 0 ? (
+      <AnnouncementFeed
+        posts={data.messages}
+        reactions={data.reactions}
+        membersById={data.membersById}
+        showAddReaction
+      />
+    ) : (
+      <p className="text-muted" style={{ padding: '1.5rem' }}>
+        No announcements yet.
+      </p>
+    )
+
+  const footer = (
+    <footer className="channel-footer">
+      <span className="channel-footer-note">◆ Only managers can post</span>
+    </footer>
+  )
+
+  if (!isDesktop) {
+    return (
+      <div className="phone">
+        <ChannelTopbar channel={{ name: conversation.name ?? '', audience }} backTo="/chats" />
+        <div className="phone-scroll channel-scroll">{feed}</div>
+        {footer}
       </div>
-      <footer className="channel-footer">
-        <span className="channel-footer-note">◆ Only managers can post</span>
-      </footer>
-    </div>
+    )
+  }
+
+  return (
+    <main className="desktop-main">
+      <ChannelTopbar channel={{ name: conversation.name ?? '', audience }} />
+      <div className="channel-scroll desktop-convo">
+        <div className="desktop-feed">{feed}</div>
+      </div>
+      {footer}
+    </main>
   )
 }
 

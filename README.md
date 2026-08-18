@@ -18,6 +18,17 @@ All artifacts are committed to this repo as they're produced, so the full decisi
 
 A mobile-first PWA giving a hotel's on-site staff WhatsApp-grade internal chat plus official announcement channels, organized by the org chart and integrated (eventually) with the surrounding software ecosystem.
 
+Project outline:
+
+| Path | What it is |
+|------|------------|
+| `frontend/` | The frontend app (Vite + React + TanStack Router/DB) — currently static UI mockups, `pnpm dev` and open `/` for the screen index |
+| `backend/` | The Phoenix backend: custom API under `/api`, Electric's sync API under `/api/sync` (embedded via phoenix_sync), SPA serving with catch-all; `docker compose up -d` + `mix phx.server` for dev |
+| `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app |
+| `release.sh` | Release workflow: frontend build → `backend/priv/static` → mix release → self-contained Docker image serving API + sync + SPA from one origin |
+
+AI briefs and artifacts, in chronological order:
+
 | File | What it is |
 |------|------------|
 | `../2026-08-18-1-kickoff-brainstorming-ai-brief.md` | The original brief: goals, scope boundaries, session format |
@@ -26,13 +37,19 @@ A mobile-first PWA giving a hotel's on-site staff WhatsApp-grade internal chat p
 | `2026-08-18-session-2-prep.md` | Agenda and inputs for session 2 (UI mockups) |
 | `../2026-08-18-2-ui-mockup-ai-brief.md` | Brief for session 2: mockup goals + the frontend stack |
 | `2026-08-18-brand-guidelines.md` | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns |
-| `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app |
 | `2026-08-18-session-2-log.md` | Session 2 log: frontend scaffold decisions, parallel mockup build, review findings |
 | `2026-08-18-session-2-summary.md` | Session 2 summary: premise, decisions/forks, state of the frontend + architecture |
-| `frontend/` | The frontend app (Vite + React + TanStack Router/DB) — currently static UI mockups, `pnpm dev` and open `/` for the screen index |
 | `../2026-08-18-3-backend-arch-ai-brief.md` | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
 | `2026-08-18-session-3-summary.md` | Session 3 summary: backend scaffold decisions/forks, verified state, open items |
-| `backend/` | The Phoenix backend: custom API under `/api`, Electric's sync API under `/api/sync` (embedded via phoenix_sync), SPA serving with catch-all; `docker compose up -d` + `mix phx.server` for dev |
-| `release.sh` | Release workflow: frontend build → `backend/priv/static` → mix release → self-contained Docker image serving API + sync + SPA from one origin |
 
-**Roadmap:** session 1 mapped the MVP scope ✔ → brand research ✔ → session 2 UI mockups + frontend scaffold ✔ → session 3 backend scaffold: Phoenix + embedded Electric sync, one-origin routing, Docker release workflow ✔ → data model: translate the session-1 entities (Company/Location/Member/Conversation/Message…) into migrations and sync shapes → frontend↔backend wiring: TanStack DB collections on `/api/sync/*` replacing `mock/data.ts`, auth on the `/api` pipeline → feature build-out (messaging, channels, notifications, onboarding/offboarding) → production hardening (release migrations, Electric storage volume, media retention strategy) → pilot deployment.
+**Roadmap:**
+
+- [x] Session 1: map the MVP scope
+- [x] Brand research → guidelines + shared stylesheet
+- [x] Session 2: UI mockups + frontend scaffold
+- [x] Session 3: backend scaffold — Phoenix + embedded Electric sync, one-origin routing, Docker release workflow
+- [ ] Data model: translate the session-1 entities (Company/Location/Member/Conversation/Message…) into migrations and sync shapes
+- [ ] Frontend↔backend wiring: TanStack DB collections on `/api/sync/*` replacing `mock/data.ts`, auth on the `/api` pipeline
+- [ ] Feature build-out: messaging, channels, notifications, onboarding/offboarding
+- [ ] Production hardening: release migrations, Electric storage volume, media retention strategy
+- [ ] Pilot deployment

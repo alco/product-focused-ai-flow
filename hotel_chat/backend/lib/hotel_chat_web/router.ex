@@ -14,6 +14,16 @@ defmodule HotelChatWeb.Router do
     pipe_through :api
 
     resources "/group_chats", GroupChatController, only: [:index, :create]
+
+    # Messaging write path. Each endpoint captures the Postgres txid of its
+    # write and returns it, so the client's TanStack DB collections can hold
+    # optimistic state until the write syncs back through Electric.
+    post "/conversations", ConversationController, :create
+    post "/conversations/:conversation_id/messages", MessageController, :create
+    post "/conversations/:conversation_id/announcements", AnnouncementController, :create
+    post "/conversations/:conversation_id/read", ConversationController, :mark_read
+    post "/messages/:message_id/replies", MessageController, :reply
+    post "/messages/:message_id/reactions", ReactionController, :create
   end
 
   # Electric shape protocol, proxied to the Electric sync service. Clients

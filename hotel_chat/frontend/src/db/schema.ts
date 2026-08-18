@@ -1,17 +1,24 @@
 // Row types for the TanStack DB collections, mirroring the table schema in
 // agent_artifacts/data-model.md column for column (snake_case, ISO-8601
-// timestamptz strings) — exactly what Electric will deliver once the
-// collections switch from hard-coded fixtures to /api/sync/* shapes.
+// timestamptz strings) — exactly what Electric delivers via /api/sync/*
+// shapes (db/collections.ts).
 //
 // Types only carry the columns their shape syncs (agent_artifacts/shape-model.md):
 // e.g. Member has no phone/settings (the directory shape S3 excludes them) and
-// RosterEntry is the three-column projection the rosters shape S2b exposes.
+// RosterEntry is (almost) the three-column projection the rosters shape S2b
+// exposes — `id` rides along too because Electric requires every shape's
+// column list to include its table's primary key, even when the client has
+// no use for it.
+//
+// `type` rather than `interface`: electricCollectionOptions's generic
+// constraint (Row<unknown>, i.e. an index signature) only structurally
+// matches type aliases, not interfaces — see db/collections.ts.
 
 export type ConversationKind = 'dm' | 'group' | 'location_channel' | 'company_channel'
 export type MemberRole = 'manager' | 'staff'
 
 /** S3 `directory` — members, company-wide, S3's column subset. */
-export interface Member {
+export type Member = {
   id: string
   company_id: string
   name: string
@@ -21,7 +28,7 @@ export interface Member {
 }
 
 /** S5 `locations`. */
-export interface Location {
+export type Location = {
   id: string
   company_id: string
   name: string
@@ -29,13 +36,13 @@ export interface Location {
 }
 
 /** S4 `member_locations`. */
-export interface MemberLocation {
+export type MemberLocation = {
   member_id: string
   location_id: string
 }
 
 /** S2 `my_conversations`. */
-export interface Conversation {
+export type Conversation = {
   id: string
   company_id: string
   kind: ConversationKind
@@ -50,7 +57,7 @@ export interface Conversation {
 }
 
 /** S1 `my_memberships` — my conversation_members rows, all per-chat state. */
-export interface ConversationMember {
+export type ConversationMember = {
   id: string
   conversation_id: string
   member_id: string
@@ -63,14 +70,16 @@ export interface ConversationMember {
 }
 
 /** S2b `rosters` — conversation_members of my conversations, 3-column projection. */
-export interface RosterEntry {
+export type RosterEntry = {
+  /** unused by the client; present because Electric requires the PK column. */
+  id: string
   conversation_id: string
   member_id: string
   added_by: string | null
 }
 
 /** S8 `messages` — announcement posts are messages with title/post_emoji set. */
-export interface Message {
+export type Message = {
   id: string
   conversation_id: string
   author_id: string
@@ -83,7 +92,7 @@ export interface Message {
 }
 
 /** S9 `message_reactions` — one row per member per emoji; the client aggregates. */
-export interface MessageReaction {
+export type MessageReaction = {
   id: string
   message_id: string
   member_id: string
@@ -92,7 +101,7 @@ export interface MessageReaction {
 }
 
 /** S10 `message_attachments`. */
-export interface MessageAttachment {
+export type MessageAttachment = {
   id: string
   message_id: string
   kind: 'image' | 'file'
@@ -102,7 +111,7 @@ export interface MessageAttachment {
 }
 
 /** S6 `my_settings` — private per-member state, never in the directory shape. */
-export interface MemberSettings {
+export type MemberSettings = {
   member_id: string
   snoozed_until: string | null
   snooze_minutes: number
@@ -110,7 +119,7 @@ export interface MemberSettings {
 }
 
 /** S7 `my_schedule` — display-only, feeds the push working-hours gate. */
-export interface WorkSchedule {
+export type WorkSchedule = {
   id: string
   member_id: string
   /** 0=Mon … 6=Sun */

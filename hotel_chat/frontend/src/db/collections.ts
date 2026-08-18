@@ -1,11 +1,25 @@
-// TanStack DB collections — one per shape in agent_artifacts/shape-model.md.
+// TanStack DB collections — one per shape in agent_artifacts/shape-model.md,
+// synced live from Postgres via Electric. Each collection points at
+// `/api/sync/<shape>`, the authorizing proxy that resolves the shape name to
+// a server-decided table/where/columns definition (HotelChat.Sync.Shapes)
+// scoped to the current session ($me/$company) — see 3-backend-arch-ai-brief.md
+// and the sync controller for the proxy mechanics.
 //
-// Current stage: QueryCollections whose queryFn returns hard-coded fixture
-// rows (no outgoing requests). Next stage: swap each queryCollectionOptions
-// for electricCollectionOptions pointed at its `/api/sync/:shape` endpoint —
-// the shape id each collection mirrors is noted below. Row types already match
-// what Electric will deliver, so only this file (and the fixtures it imports)
-// changes; every screen reads the collections through live queries.
+// Row types (./schema) already match what each shape selects — a shape's
+// column list is allowed to (and does, for several of these) select fewer
+// columns than its table has; see the cross-check note in
+// 6-backend-data-model-ai-brief.md. No `schema:` (zod) option is passed:
+// electricCollectionOptions accepts an explicit type parameter instead, and
+// this project has no runtime-validation need beyond what Ecto already
+// enforces server-side.
+//
+// Postgres `timestamp` columns aren't auto-parsed by the Electric client (only
+// `text`/`uuid`/`bool`/`int4`/`int8`/`jsonb` are) and arrive as
+// "2026-08-17 16:02:00" — not the ISO-8601 strings the rest of the app
+// assumes (comparisons in db/derive.ts rely on that format sorting
+// correctly). `timestampParser` below normalizes the wire value to
+// "2026-08-17T16:02:00Z" (the stored value is already UTC per Ecto
+// convention) without changing its type — it's still a plain string.
 //
 //   S1  my_memberships   → membershipsCollection
 //   S2  my_conversations → conversationsCollection
@@ -21,105 +35,94 @@
 //   S10 attachments      → attachmentsCollection
 
 import { createCollection } from '@tanstack/react-db'
-import { queryCollectionOptions } from '@tanstack/query-db-collection'
-import { QueryClient } from '@tanstack/query-core'
-import * as fixtures from './fixtures'
+import { electricCollectionOptions } from '@tanstack/electric-db-collection'
+import type { Row } from '@electric-sql/client'
+import type {
+  Conversation,
+  ConversationMember,
+  Location,
+  Member,
+  MemberLocation,
+  MemberSettings,
+  Message,
+  MessageAttachment,
+  MessageReaction,
+  RosterEntry,
+  WorkSchedule,
+} from './schema'
 
-// Fixture data is static: never stale, never refetched.
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: Infinity, retry: false, refetchOnWindowFocus: false },
-  },
-})
+const timestampParser = (value: string) => value.replace(' ', 'T') + 'Z'
 
-const fixtureCollection = <T extends object>(
-  id: string,
-  rows: T[],
+const shapeCollection = <T extends Row<unknown>>(
+  shape: string,
   getKey: (row: T) => string,
+  withTimestamps = false,
 ) =>
   createCollection(
-    queryCollectionOptions({
-      id,
-      queryKey: [id],
-      queryFn: async () => rows,
-      queryClient,
+    electricCollectionOptions<T>({
+      id: shape,
+      shapeOptions: {
+        url: `/api/sync/${shape}`,
+        parser: withTimestamps ? { timestamp: timestampParser } : undefined,
+      },
       getKey,
     }),
   )
 
 /** S1 — my conversation_members rows: favorites, mutes, read cursors. */
-export const membershipsCollection = fixtureCollection(
+export const membershipsCollection = shapeCollection<ConversationMember>(
   'my_memberships',
-  fixtures.myMembershipRows,
   (r) => r.id,
+  true,
 )
 
 /** S2 — every conversation I'm a member of. */
-export const conversationsCollection = fixtureCollection(
+export const conversationsCollection = shapeCollection<Conversation>(
   'my_conversations',
-  fixtures.conversationRows,
   (r) => r.id,
+  true,
 )
 
 /** S2b — full rosters of my conversations (3-column projection). */
-export const rostersCollection = fixtureCollection(
+export const rostersCollection = shapeCollection<RosterEntry>(
   'rosters',
-  fixtures.rosterRows,
   (r) => `${r.conversation_id}:${r.member_id}`,
 )
 
 /** S3 — the company-wide member directory. */
-export const directoryCollection = fixtureCollection(
-  'directory',
-  fixtures.memberRows,
-  (r) => r.id,
-)
+export const directoryCollection = shapeCollection<Member>('directory', (r) => r.id)
 
 /** S4 — member ↔ location assignments across the company. */
-export const memberLocationsCollection = fixtureCollection(
+export const memberLocationsCollection = shapeCollection<MemberLocation>(
   'member_locations',
-  fixtures.memberLocationRows,
   (r) => `${r.member_id}:${r.location_id}`,
 )
 
 /** S5 — the company's locations. */
-export const locationsCollection = fixtureCollection(
-  'locations',
-  fixtures.locationRows,
-  (r) => r.id,
-)
+export const locationsCollection = shapeCollection<Location>('locations', (r) => r.id)
 
 /** S6 — my private settings (snooze, language). */
-export const settingsCollection = fixtureCollection(
+export const settingsCollection = shapeCollection<MemberSettings>(
   'my_settings',
-  fixtures.settingsRows,
   (r) => r.member_id,
+  true,
 )
 
 /** S7 — my work schedule (display-only). */
-export const scheduleCollection = fixtureCollection(
-  'my_schedule',
-  fixtures.scheduleRows,
-  (r) => r.id,
-)
+export const scheduleCollection = shapeCollection<WorkSchedule>('my_schedule', (r) => r.id)
 
 /** S8 — recent-message windows of my conversations (chat list + transcripts). */
-export const messagesCollection = fixtureCollection(
-  'messages',
-  fixtures.messageRows,
-  (r) => r.id,
-)
+export const messagesCollection = shapeCollection<Message>('messages', (r) => r.id, true)
 
 /** S9 — per-member reaction rows; chips aggregate client-side. */
-export const reactionsCollection = fixtureCollection(
+export const reactionsCollection = shapeCollection<MessageReaction>(
   'reactions',
-  fixtures.reactionRows,
   (r) => r.id,
+  true,
 )
 
-/** S10 — message attachments (none in the fixtures yet). */
-export const attachmentsCollection = fixtureCollection(
+/** S10 — message attachments. */
+export const attachmentsCollection = shapeCollection<MessageAttachment>(
   'attachments',
-  fixtures.attachmentRows,
   (r) => r.id,
 )

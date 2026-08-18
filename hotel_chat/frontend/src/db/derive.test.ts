@@ -77,8 +77,8 @@ describe('conversationTitle', () => {
   })
   it('derives DM titles from the roster counterpart', () => {
     const roster = [
-      { conversation_id: 'c', member_id: 'priya', added_by: null },
-      { conversation_id: 'c', member_id: 'daniel', added_by: null },
+      { id: 'cm1', conversation_id: 'c', member_id: 'priya', added_by: null },
+      { id: 'cm2', conversation_id: 'c', member_id: 'daniel', added_by: null },
     ]
     expect(conversationTitle({ name: null, kind: 'dm' }, roster, membersById, 'priya')).toBe(
       'Daniel Okafor',

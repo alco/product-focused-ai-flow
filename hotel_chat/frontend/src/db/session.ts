@@ -3,16 +3,19 @@
 // and my own phone number arrive via session bootstrap, not via a shape —
 // see "deliberate non-shapes" in agent_artifacts/shape-model.md).
 //
-// Ids stay readable slugs ('priya', 'harbourlight') until real backend data
-// exists; they are plain strings, so swapping in uuids later changes nothing.
+// The member/company ids below are the real seeded rows (priv/repo/seeds.exs)
+// for Priya Nair @ Harbourlight Hotels — matching HotelChat.Sync.MockSession,
+// the backend's own stand-in for these same rows until real auth lands. Both
+// sides derive them the same way (sha256 of "member:priya" /
+// "company:harbourlight", loaded as a UUID) so they can't drift silently.
 
 export const session = {
   /** $me — injected server-side into every shape's where-clause. */
-  memberId: 'priya',
-  companyId: 'harbourlight',
+  memberId: '40af6c74-df81-7136-92a9-5c7e1e69d160',
+  companyId: '89eae56d-3296-8581-5c48-b2684e23db93',
   companyName: 'Harbourlight Hotels',
   /** Own phone: members.phone is excluded from the directory shape (PII). */
   phone: '+44 7700 900417',
   /** Viewer for the /mobile/channel-manager design preview (Daniel's view). */
-  managerMemberId: 'daniel',
+  managerMemberId: '320ec221-38fa-9c5f-97b3-6abeb68ff0fe',
 }

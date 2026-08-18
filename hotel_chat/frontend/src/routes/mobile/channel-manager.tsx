@@ -6,7 +6,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { AnnouncementFeed } from '../../components/channel/AnnouncementFeed'
 import { ChannelTopbar } from '../../components/channel/ChannelTopbar'
 import { channelFeed } from '../../mock/channel'
-import { managerUser } from '../../mock/data'
+import { locationChannel, managerUser } from '../../mock/data'
 import '../../styles/channel.css'
 
 export const Route = createFileRoute('/mobile/channel-manager')({
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/mobile/channel-manager')({
 function ChannelManager() {
   return (
     <div className="phone">
-      <ChannelTopbar />
+      <ChannelTopbar channel={locationChannel} />
       <div className="phone-scroll channel-scroll">
         <AnnouncementFeed posts={channelFeed} editableAuthorId={managerUser.id} />
       </div>

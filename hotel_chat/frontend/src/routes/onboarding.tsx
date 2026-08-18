@@ -1,9 +1,10 @@
+// frontend/src/routes/onboarding.tsx
 import { createFileRoute } from '@tanstack/react-router'
-import { Avatar } from '../../components/Avatar'
-import { currentUser, location, managerUser } from '../../mock/data'
-import '../../styles/session2-screens.css'
+import { Avatar } from '../components/Avatar'
+import { currentUser, location, managerUser } from '../mock/data'
+import '../styles/session2-screens.css'
 
-export const Route = createFileRoute('/mobile/onboarding')({
+export const Route = createFileRoute('/onboarding')({
   component: OnboardingScreen,
 })
 

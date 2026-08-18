@@ -1,17 +1,18 @@
+// frontend/src/routes/profile.tsx
 import { createFileRoute } from '@tanstack/react-router'
-import { Avatar } from '../../components/Avatar'
-import { TabBar } from '../../components/TabBar'
-import { currentUser, location } from '../../mock/data'
+import { Avatar } from '../components/Avatar'
+import { TabBar } from '../components/TabBar'
+import { currentUser, location } from '../mock/data'
 import {
   accountLanguage,
   accountPhone,
   mutedChats,
   snoozeSetting,
   workSchedule,
-} from '../../mock/profile'
-import '../../styles/session2-screens.css'
+} from '../mock/profile'
+import '../styles/session2-screens.css'
 
-export const Route = createFileRoute('/mobile/profile')({
+export const Route = createFileRoute('/profile')({
   component: ProfileScreen,
 })
 

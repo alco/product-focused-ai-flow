@@ -1,10 +1,11 @@
+// frontend/src/routes/people.tsx
 import { createFileRoute } from '@tanstack/react-router'
-import { Avatar } from '../../components/Avatar'
-import { TabBar } from '../../components/TabBar'
-import { location, people } from '../../mock/data'
-import '../../styles/session2-screens.css'
+import { Avatar } from '../components/Avatar'
+import { TabBar } from '../components/TabBar'
+import { location, people } from '../mock/data'
+import '../styles/session2-screens.css'
 
-export const Route = createFileRoute('/mobile/people')({
+export const Route = createFileRoute('/people')({
   component: PeopleScreen,
 })
 

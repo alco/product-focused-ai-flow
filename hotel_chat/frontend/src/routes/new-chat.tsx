@@ -1,9 +1,10 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Avatar } from '../../components/Avatar'
-import { currentUser, people, personById } from '../../mock/data'
-import '../../styles/session2-screens.css'
+// frontend/src/routes/new-chat.tsx
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { Avatar } from '../components/Avatar'
+import { currentUser, people, personById } from '../mock/data'
+import '../styles/session2-screens.css'
 
-export const Route = createFileRoute('/mobile/new-chat')({
+export const Route = createFileRoute('/new-chat')({
   component: NewChatScreen,
 })
 
@@ -19,9 +20,9 @@ function NewChatScreen() {
   return (
     <div className="phone">
       <header className="topbar">
-        <a className="close-x" href="/mobile/chats" aria-label="Close">
+        <Link className="close-x" to="/chats" aria-label="Close">
           ✕
-        </a>
+        </Link>
         <h1 className="topbar-title">New chat</h1>
       </header>
 

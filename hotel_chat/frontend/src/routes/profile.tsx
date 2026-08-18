@@ -1,15 +1,21 @@
 // frontend/src/routes/profile.tsx
+// My Profile: identity from the directory + locations collections, settings
+// from my_settings, the schedule card from my_schedule, and the muted-chats
+// list derived from my memberships ⋈ conversations. Phone comes via session
+// bootstrap (the directory shape deliberately excludes it).
 import { createFileRoute } from '@tanstack/react-router'
+import { eq, useLiveQuery } from '@tanstack/react-db'
 import { Avatar } from '../components/Avatar'
 import { TabBar } from '../components/TabBar'
-import { currentUser, location } from '../mock/data'
 import {
-  accountLanguage,
-  accountPhone,
-  mutedChats,
-  snoozeSetting,
-  workSchedule,
-} from '../mock/profile'
+  conversationsCollection,
+  membershipsCollection,
+  scheduleCollection,
+  settingsCollection,
+} from '../db/collections'
+import { isMuted, languageName, scheduleSummary, snoozeLabel } from '../db/derive'
+import { session } from '../db/session'
+import { useMe, useMyLocation } from '../hooks/useSessionMember'
 import '../styles/session2-screens.css'
 
 export const Route = createFileRoute('/profile')({
@@ -44,6 +50,22 @@ function SettingsRow({
 }
 
 function ProfileScreen() {
+  const me = useMe()
+  const location = useMyLocation()
+  const { data: settingsRows } = useLiveQuery((q) =>
+    q.from({ s: settingsCollection }).where(({ s }) => eq(s.member_id, session.memberId)),
+  )
+  const settings = settingsRows[0]
+  const { data: schedule } = useLiveQuery((q) => q.from({ ws: scheduleCollection }))
+  const { data: memberships } = useLiveQuery((q) => q.from({ m: membershipsCollection }))
+  const { data: conversations } = useLiveQuery((q) => q.from({ c: conversationsCollection }))
+
+  const conversationNameById = new Map(conversations.map((c) => [c.id, c.name]))
+  const mutedChats = memberships
+    .filter((m) => isMuted(m))
+    .map((m) => conversationNameById.get(m.conversation_id))
+    .filter((name): name is string => !!name)
+
   return (
     <div className="phone">
       <header className="topbar">
@@ -52,13 +74,13 @@ function ProfileScreen() {
 
       <div className="profile-body">
         <div className="profile-card">
-          <Avatar name={currentUser.name} size={72} />
-          <div className="profile-name">{currentUser.name}</div>
+          {me && <Avatar name={me.name} size={72} />}
+          <div className="profile-name">{me?.name}</div>
           <div className="profile-job">
-            {currentUser.jobTitle} · {location.name}
+            {me?.job_title} · {location?.name}
           </div>
           <span className="pill pill--stone" style={{ marginTop: '0.375rem' }}>
-            Staff
+            {me?.role === 'manager' ? 'Manager' : 'Staff'}
           </span>
         </div>
 
@@ -66,18 +88,18 @@ function ProfileScreen() {
         <div className="settings-card">
           <SettingsRow
             label="Work schedule"
-            value={`${workSchedule.days} · ${workSchedule.hours}`}
-            explainer={workSchedule.explainer}
+            value={scheduleSummary(schedule)}
+            explainer="Pushes are delivered only during your working hours"
             chevron={false}
           />
-          <SettingsRow label="Snooze all" value={snoozeSetting} />
+          {settings && <SettingsRow label="Snooze all" value={snoozeLabel(settings)} />}
           <SettingsRow label="Muted chats" value={mutedChats.join(', ')} />
         </div>
 
         <div className="section-label">Account</div>
         <div className="settings-card">
-          <SettingsRow label="Phone number" value={accountPhone} />
-          <SettingsRow label="Language" value={accountLanguage} />
+          <SettingsRow label="Phone number" value={session.phone} />
+          {settings && <SettingsRow label="Language" value={languageName(settings.language)} />}
         </div>
 
         <div className="settings-card logout-row" style={{ marginTop: '1rem' }}>

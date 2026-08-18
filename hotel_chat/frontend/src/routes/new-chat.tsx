@@ -1,7 +1,12 @@
 // frontend/src/routes/new-chat.tsx
+// Member picker over the directory collection. The selection is mocked
+// mid-action (creation itself will be an API write, not a collection concern).
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { useLiveQuery } from '@tanstack/react-db'
 import { Avatar } from '../components/Avatar'
-import { currentUser, people, personById } from '../mock/data'
+import { directoryCollection } from '../db/collections'
+import { onlineMemberIds } from '../db/presence'
+import { session } from '../db/session'
 import '../styles/session2-screens.css'
 
 export const Route = createFileRoute('/new-chat')({
@@ -10,13 +15,14 @@ export const Route = createFileRoute('/new-chat')({
 
 // Mocked mid-action: group mode with three people already selected.
 const selectedIds = ['amira', 'jamal', 'hannah']
-const selectedPeople = selectedIds.map(personById)
-
-const candidates = people
-  .filter((p) => p.id !== currentUser.id)
-  .sort((a, b) => a.name.localeCompare(b.name))
 
 function NewChatScreen() {
+  const { data: members } = useLiveQuery((q) => q.from({ d: directoryCollection }))
+  const selectedPeople = members.filter((m) => selectedIds.includes(m.id))
+  const candidates = members
+    .filter((m) => m.id !== session.memberId)
+    .sort((a, b) => a.name.localeCompare(b.name))
+
   return (
     <div className="phone">
       <header className="topbar">
@@ -68,13 +74,15 @@ function NewChatScreen() {
                 </span>
                 <span className="presence-wrap">
                   <Avatar name={person.name} size={40} />
-                  {person.online && <span className="presence-dot" aria-hidden />}
+                  {onlineMemberIds.has(person.id) && (
+                    <span className="presence-dot" aria-hidden />
+                  )}
                 </span>
                 <div className="person-main">
                   <div className="person-name-row">
                     <span className="person-name">{person.name}</span>
                   </div>
-                  <div className="person-meta">{person.jobTitle}</div>
+                  <div className="person-meta">{person.job_title}</div>
                 </div>
               </li>
             )

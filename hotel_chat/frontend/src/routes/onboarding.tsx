@@ -1,12 +1,24 @@
 // frontend/src/routes/onboarding.tsx
+// Pre-auth screen: onboarding talks to the API only (invite lookup, OTP,
+// profile) and deliberately reads no collections — there is no session yet
+// (shape-model.md, screens table). The invite details below are static
+// display copy standing in for the invite-lookup API response.
 import { createFileRoute } from '@tanstack/react-router'
 import { Avatar } from '../components/Avatar'
-import { currentUser, location, managerUser } from '../mock/data'
 import '../styles/session2-screens.css'
 
 export const Route = createFileRoute('/onboarding')({
   component: OnboardingScreen,
 })
+
+// Mock invite-lookup response (what GET /api/invites/:token will return).
+const invite = {
+  managerName: 'Daniel Okafor',
+  managerJobTitle: 'Duty Manager',
+  locationName: 'Harbourlight Bankside',
+  name: 'Priya Nair',
+  jobTitle: 'Front Desk',
+}
 
 // Mocked mid-entry: four of six OTP digits typed, caret in the fifth box.
 const otpDigits = ['4', '8', '2', '7', null, null]
@@ -28,10 +40,10 @@ function OnboardingScreen() {
           <div className="onboard-card">
             <h3>You&rsquo;ve been invited</h3>
             <div className="invited-by">
-              <Avatar name={managerUser.name} size={36} />
+              <Avatar name={invite.managerName} size={36} />
               <span>
-                <strong>{managerUser.name}</strong> ({managerUser.jobTitle}) invited you to
-                join {location.name}
+                <strong>{invite.managerName}</strong> ({invite.managerJobTitle}) invited you to
+                join {invite.locationName}
               </span>
             </div>
             <p className="text-muted" style={{ fontSize: '0.875rem', margin: 0 }}>
@@ -68,12 +80,12 @@ function OnboardingScreen() {
                 id="onboard-name"
                 className="text-input"
                 type="text"
-                defaultValue={currentUser.name}
+                defaultValue={invite.name}
               />
             </div>
             <div>
               <span className="field-label">Job title</span>
-              <div className="readonly-field">{currentUser.jobTitle}</div>
+              <div className="readonly-field">{invite.jobTitle}</div>
               <div className="field-note">Set by your manager</div>
             </div>
             <button type="button" className="btn btn-lime btn-join btn-block">

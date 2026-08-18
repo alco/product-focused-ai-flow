@@ -43,6 +43,9 @@ AI briefs and artifacts, in chronological order:
 | `2026-08-18-session-3-summary.md` | Session 3 summary: backend scaffold decisions/forks, verified state, open items |
 | `2026-08-18-data-model.md` | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review) |
 | `2026-08-18-shape-model.md` | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review) |
+| `2026-08-18-session-4-navigation-wiring-implementation-plan.md` | Session 4 implementation plan: responsive routing architecture, task-by-task build |
+| `2026-08-18-session-4-log.md` | Session 4 log: parallel-worktree execution, merge, integration verification |
+| `2026-08-18-session-4-summary.md` | Session 4 summary: premise, decisions/forks, navigation architecture as built |
 
 **Roadmap:**
 
@@ -50,7 +53,7 @@ AI briefs and artifacts, in chronological order:
 - [x] Brand research → guidelines + shared stylesheet
 - [x] Session 2: UI mockups + frontend scaffold
 - [x] Session 3: backend scaffold — Phoenix + embedded Electric sync, one-origin routing, Docker release workflow
-- [ ] Wire up frontend navigation between screens
+- [x] Wire up frontend navigation between screens
 - [ ] Define TanstackDB collections for all types of entities with mock data
 - [x] Data model design: session-1 entities (Company/Location/Member/Conversation/Message…) → table schema + per-screen shape catalog with index cross-check (docs awaiting review)
 - [ ] Data model implementation: migrations, Create/Update API endpoints + unit tests (after design review)

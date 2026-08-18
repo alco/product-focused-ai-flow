@@ -1,6 +1,6 @@
 # Sona brand — visual guidelines for the hotel chat MVP
 
-**Date:** 2026-08-18 · **Purpose:** codify Sona's brand identity into reusable rules + tokens that feed (1) the session-2 static HTML mockups and (2) the eventual React/Vite frontend. Companion artifact: [`brand/sona-brand.css`](brand/sona-brand.css) — the single shared stylesheet encoding these tokens.
+**Date:** 2026-08-18 · **Purpose:** codify Sona's brand identity into reusable rules + tokens that feed (1) the session-2 static HTML mockups and (2) the eventual React/Vite frontend. Companion artifact: [`../brand/sona-brand.css`](../brand/sona-brand.css) — the single shared stylesheet encoding these tokens.
 
 **Sources examined:** all core pages of www.sona.ai (home, About, Pricing, Careers, products: employee-app / scheduling / HR / payroll / ATS / LMS / forecasting / reporting / Raffy AI, industries: hospitality / hotels / care / retail / logistics), the four theme CSS bundles behind the site (`template_theme-overrides`, `template_main`, `template_sona-tailwind-*`), the OG/social share image, product-UI illustration assets, and funding-announcement blog posts. Sona publishes **no standalone press kit**; the marketing site is the de-facto brand reference.
 
@@ -70,7 +70,7 @@ Sona runs a shadcn-style HSL token system over Tailwind's **stone** (warm gray) 
 - **Photo treatment:** authentic frontline staff photography (baristas, housekeepers, storefronts), often under `bg-gradient-to-t from-black/60 to-transparent` overlays with white text.
 - **Spacing rhythm:** generous vertical whitespace between sections; inside cards, 1rem–1.5rem padding; body paragraphs separated by 1rem.
 
-## 6. Component idioms (as encoded in `brand/sona-brand.css`)
+## 6. Component idioms (as encoded in `../brand/sona-brand.css`)
 
 - **Buttons:** inline-flex, 8px radius, `.75rem 1.5rem` padding, Sora 600, `transition all .2s`. Variants: **primary** navy→blue hover, white text; **secondary** transparent with navy border → stone-100 hover; **lime** lime-500/400 with near-black text (hero CTAs). Arrows (→ / ↗) as trailing affordance.
 - **Eyebrow label:** `◆ LABEL` — Plex Mono, 12px, uppercase, 0.15em tracking, accent color (primary green by default; category color inside cards).
@@ -80,7 +80,7 @@ Sona runs a shadcn-style HSL token system over Tailwind's **stone** (warm gray) 
 
 ## 7. Feeding the next stages
 
-- **Session 2 (static HTML mockups):** every mockup page links the shared [`brand/sona-brand.css`](brand/sona-brand.css) (tokens + base + component classes) and inlines only page-specific layout styles. This keeps all pages on one visual system and makes divergence a deliberate act.
+- **Session 2 (static HTML mockups):** every mockup page links the shared [`../brand/sona-brand.css`](../brand/sona-brand.css) (tokens + base + component classes) and inlines only page-specific layout styles. This keeps all pages on one visual system and makes divergence a deliberate act.
 - **Implementation (already decided by Oleksii):** TypeScript + **React** for views, **TanStack DB** for the local data model, **Vite** build, **vitest** tests. The brand CSS carries over as the global stylesheet: components consume the same custom properties (`var(--sona-*)`) rather than redefining colors, so mockups and the real app share one source of truth. Google Fonts (Sora, IBM Plex Mono) via `<link>` in mockups; self-host via Fontsource in the app.
 - **App-specific translation suggestions** (decisions for the mockup session, not made here): stone-50 app background with white chat surfaces; navy for primary actions and own-message emphasis; the eyebrow idiom for section headers ("📌 OFFICIAL" in mono); lime tint as the *official channel* signature vs plain white organic chats — echoing Sona's category color-coding; mono for timestamps and system messages.
 

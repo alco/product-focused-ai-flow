@@ -1,8 +1,8 @@
 # Hotel Chat — Data Model
 
-**Date:** 2026-08-18 · **Stage:** brief 3 (`../3-backend-arch-ai-brief.md`) Phase 2, part 1 of 2 · **Status:** awaiting review — no migrations written yet · **Companion:** `shape-model.md`
+**Date:** 2026-08-18 · **Stage:** brief 3 (`../../3-backend-arch-ai-brief.md`) Phase 2, part 1 of 2 · **Status:** awaiting review — no migrations written yet · **Companion:** `shape-model.md`
 
-Inputs: the session-1 entity decisions (`session-1-summary.md` §2–3) and the session-2 screens' actual data needs (`frontend/src/mock/*.ts`). Where Electric's shape mechanics forced a schema choice, the table notes say so and the companion shape doc carries the cross-check.
+Inputs: the session-1 entity decisions (`../agent_sessions/session-1-summary.md` §2–3) and the session-2 screens' actual data needs (`../frontend/src/mock/*.ts`). Where Electric's shape mechanics forced a schema choice, the table notes say so and the companion shape doc carries the cross-check.
 
 ## Conventions
 

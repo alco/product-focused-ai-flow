@@ -1,6 +1,6 @@
 # Hotel Chat — Shape Model
 
-**Date:** 2026-08-18 · **Stage:** brief 3 (`../3-backend-arch-ai-brief.md`) Phase 2, part 2 of 2 · **Status:** awaiting review · **Companion:** `data-model.md`
+**Date:** 2026-08-18 · **Stage:** brief 3 (`../../3-backend-arch-ai-brief.md`) Phase 2, part 2 of 2 · **Status:** awaiting review · **Companion:** `data-model.md`
 
 The read path is Electric shapes end to end: every screen renders from TanStack DB collections backed by shapes served at `/api/sync/*`; the custom API exists only for writes. This doc catalogs every shape each screen needs, then walks the catalog back against the schema to double-check the index requirements (the brief's stated purpose).
 

@@ -25,7 +25,7 @@ Desktop (after mobile settles):
 - Announcement posts: styled as cards (title-ish, roomier) vs plain chat bubbles?
 - Unread/badge and mute-state treatments in the list.
 - Empty states: fresh install, empty location channel, no favorites yet.
-- ~~Visual identity: none chosen yet~~ **Resolved 2026-08-18:** brand identity distilled from www.sona.ai into `brand-guidelines.md` + shared stylesheet `brand/sona-brand.css` (Sora + IBM Plex Mono, stone/lime/navy system, tokens + component classes). Mockup pages link the shared CSS and inline only page-specific styles.
+- ~~Visual identity: none chosen yet~~ **Resolved 2026-08-18:** brand identity distilled from www.sona.ai into `../agent_artifacts/brand-guidelines.md` + shared stylesheet `../brand/sona-brand.css` (Sora + IBM Plex Mono, stone/lime/navy system, tokens + component classes). Mockup pages link the shared CSS and inline only page-specific styles.
 
 ## Inputs wanted from Oleksii
 

@@ -1,6 +1,6 @@
 # Hotel Chat — Session 3 Summary: Backend Scaffold
 
-**Date:** 2026-08-18 · **Format:** autonomous execution by Claude, Oleksii steering by brief · **Brief:** `../3-backend-arch-ai-brief.md` · **Previous:** `session-2-summary.md`
+**Date:** 2026-08-18 · **Format:** autonomous execution by Claude, Oleksii steering by brief · **Brief:** `../../3-backend-arch-ai-brief.md` · **Previous:** `session-2-summary.md`
 
 ## 1. Premise
 

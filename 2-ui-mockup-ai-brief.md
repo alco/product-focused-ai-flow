@@ -1,8 +1,8 @@
 # UI mockup (and frontend codebase setup)
 
-Now that we have established the product vision and defined the scope for the MVP in `hotel_chat/session-1-summary.md`, it is time to decide what the MVP will look like and start shaping up the code structure.
+Now that we have established the product vision and defined the scope for the MVP in `hotel_chat/agent_sessions/session-1-summary.md`, it is time to decide what the MVP will look like and start shaping up the code structure.
 
-`hotel_chat/session-2-prep.md` should be your starting point for getting into the right mindset for this session.
+`hotel_chat/agent_sessions/session-2-prep.md` should be your starting point for getting into the right mindset for this session.
 
 At a high level, we'll have separate directories for the frontend (hotel_chat/frontend) and backend (hotel_chat/backend). Our frontend tech stack:
 

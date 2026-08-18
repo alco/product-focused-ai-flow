@@ -8,7 +8,7 @@ Inputs: the session-1 entity decisions (`2026-08-18-session-1-summary.md` §2–
 
 - **Primary keys:** `uuid`, server default `gen_random_uuid()`, but clients MAY supply the id — required for optimistic writes from TanStack DB (messages, reactions). Ordering never relies on id; `inserted_at` orders.
 - **Timestamps:** `timestamptz`, `inserted_at`/`updated_at` on every table (Ecto `timestamps(type: :utc_datetime_usec)`).
-- **Multi-tenancy:** `company_id` on every root table from day one (session-1 R3). Join/child tables carry it **only when a shape needs to filter by it** (Electric where-clauses see only the table's own columns).
+- **Multi-tenancy:** `company_id` on every root table from day one (session-1 R3). Child/join tables never duplicate it — shape where-clauses reach across tables with subqueries (shape doc, ground rules).
 - **Enums:** `text` + `CHECK` constraints, not Postgres enum types (cheaper migrations).
 - **Soft delete:** only where session 1 called for it (messages). Everything else deletes hard or archives.
 - **Identity-module boundary (session-1 R2):** tables marked **[IDENTITY — THROWAWAY]** belong to the mock identity system and will be replaced by the production identity ecosystem. Nothing outside the boundary may FK into their *internals*; `members.id` is the one stable handle.
@@ -17,15 +17,15 @@ Inputs: the session-1 entity decisions (`2026-08-18-session-1-summary.md` §2–
 
 ```
 companies ─┬─ locations ──────────┐
-           │                      ├─ member_locations (m2m, +company_id)
+           │                      ├─ member_locations (m2m)
            ├─ members ────────────┘
            │    ├─ member_settings   (1:1, private)
            │    ├─ work_schedules    (per weekday)        [IDENTITY]
            │    └─ push_subscriptions
            ├─ invites                                     [IDENTITY]
            └─ conversations ─┬─ conversation_members (m2m + per-member chat state)
-                             └─ messages ─┬─ message_reactions   (+conversation_id)
-                                          └─ message_attachments (+conversation_id)
+                             └─ messages ─┬─ message_reactions
+                                          └─ message_attachments
 ```
 
 Presence (online dots) is deliberately **not** a table — it's ephemeral state served by Phoenix Presence over a channel, not synced through Electric.
@@ -80,10 +80,9 @@ Provisioned manually (session-1 R3). No indexes beyond the PK.
 |---|---|---|---|---|
 | member_id | uuid | no | | FK → members, ON DELETE CASCADE |
 | location_id | uuid | no | | FK → locations, ON DELETE CASCADE |
-| company_id | uuid | no | | ⚡ denormalized so the directory shape can filter this table by tenant directly |
 | inserted_at / updated_at | timestamptz | no | | |
 
-**PK:** `(member_id, location_id)`. **Indexes:** `(location_id)` (roster of a location → channel audience), `(company_id)` (shape snapshot).
+**PK:** `(member_id, location_id)`. **Indexes:** `(location_id)` (roster of a location → channel audience). Tenant scoping in shapes goes through a subquery on `members` (shape doc, S4).
 
 Many-to-many per session-1 R3 (floating staff, multi-site managers). No `primary` flag yet — which location's timezone governs a multi-location member's push window is session-1 open thread 3; MVP evaluates against *any* of their locations' hours (generous-delivery bias) and the doc flags it for review.
 
@@ -150,18 +149,15 @@ One table for all four kinds (session-1 R4): `dm`, `group`, `location_channel`, 
 | dm_key | text | yes | | canonical `least(member_a,member_b)‖':'‖greatest(...)`; the DM-uniqueness key |
 | created_by | uuid | yes | | FK → members |
 | archived_at | timestamptz | yes | | manager archive (session-1 R4); archived chats drop out of lists client-side |
-| last_message_at | timestamptz | yes | | ⚡ denormalized chat-list card: order key … |
-| last_message_preview | text | yes | | … truncated text ("Photo"/"File" placeholder for attachment-only) |
-| last_message_author_id | uuid | yes | | … FK → members ("Elena: Floors 3–5 done") |
 | inserted_at / updated_at | timestamptz | no | | |
 
 **Indexes:** `(company_id)`; **partial unique** `(company_id, dm_key) WHERE kind = 'dm'` (one DM per pair, race-proof); partial `(company_id, kind) WHERE kind IN ('location_channel','company_channel')` (channel auto-provisioning checks).
 
-**⚡ Why the `last_message_*` columns:** Electric shapes can't join, and syncing every conversation's full history just to paint the chat list is waste. The message write path updates the parent conversation row in the same transaction (one extra row-update per message), and the chat list is then fully served by two shapes. See shape doc §"Chat list".
+No `last_message_*` columns: the chat list derives previews, ordering and unread badges from the recent-messages window each conversation syncs anyway (shape doc, S8 + §"Chat list"). Message inserts touch exactly one row.
 
 ## conversation_members
 
-Membership **plus all per-member-per-chat state** — favorite, mute, read cursor, unread badge. ⑂ This deliberately absorbs session-1's separate `MuteState` entity: every one of these fields has the same PK `(conversation, member)` and the same consumer (the chat list), so one row serves them all — and one shape (`member_id = $me`) syncs the entire chat-list state.
+Membership **plus all per-member-per-chat state** — favorite, mute, read cursor. ⑂ This deliberately absorbs session-1's separate `MuteState` entity: every one of these fields has the same PK `(conversation, member)` and the same consumer (the chat list), so one row serves them all — and one shape (`member_id = $me`) syncs all of it.
 
 | column | type | null | default | notes |
 |---|---|---|---|---|
@@ -171,14 +167,11 @@ Membership **plus all per-member-per-chat state** — favorite, mute, read curso
 | favorite | boolean | no | false | ⭐ section |
 | muted_until | timestamptz | yes | | 1 hr / 1 day mute; `infinity` not used — see next |
 | muted_forever | boolean | no | false | "always" mute; channels are never mutable (enforced in the write path, session-1 R8) |
-| last_read_at | timestamptz | yes | | read cursor |
-| unread_count | int | no | 0 | ⚡ denormalized badge — see maintenance note |
+| last_read_at | timestamptz | yes | | read cursor; unread badges are derived client-side (messages newer than this in the synced window, capped — shape doc §"Unread") |
 | added_by | uuid | yes | | FK → members; feeds "Daniel added Tomasz" system lines |
 | inserted_at / updated_at | timestamptz | no | | |
 
-**Indexes:** unique `(conversation_id, member_id)`; `(member_id)` (the my-chat-list shape).
-
-**⚡ `unread_count` maintenance:** incremented for every member except the author inside the message-insert transaction, reset to 0 when the member advances `last_read_at`. At hotel scale (5–15 members per group, ~34 per location channel) the write amplification is trivial, and it buys badge counts without syncing message history for closed chats. Muted chats still count (WhatsApp behavior); mute only gates push.
+**Indexes:** unique `(conversation_id, member_id)`; `(member_id)` (the my-chat-list shape and every membership subquery).
 
 ## messages
 
@@ -205,7 +198,6 @@ Membership **plus all per-member-per-chat state** — favorite, mute, read curso
 |---|---|---|---|---|
 | id | uuid | no | gen_random_uuid() | PK |
 | message_id | uuid | no | | FK → messages ON DELETE CASCADE |
-| conversation_id | uuid | no | | ⚡ denormalized — Electric shape filter (see below) |
 | kind | text | no | | CHECK in ('image','file') |
 | object_key | text | no | | S3 key |
 | url | text | no | | unguessable public URL (session-1 R9 access model; ⚠ 1-day retention caveat stands) |
@@ -215,7 +207,7 @@ Membership **plus all per-member-per-chat state** — favorite, mute, read curso
 | width / height | int4 | yes | | images only |
 | inserted_at / updated_at | timestamptz | no | | |
 
-**Indexes:** `(message_id)`; `(conversation_id)`.
+**Indexes:** `(message_id)` — also serves the shape's `message_id IN (subquery)` filter.
 
 ## message_reactions
 
@@ -225,14 +217,13 @@ One row per member per emoji per message; the client aggregates to `{emoji, coun
 |---|---|---|---|---|
 | id | uuid | no | gen_random_uuid() | PK; client-generated for optimistic taps |
 | message_id | uuid | no | | FK → messages ON DELETE CASCADE |
-| conversation_id | uuid | no | | ⚡ denormalized — Electric shape filter (see below) |
 | member_id | uuid | no | | FK → members |
 | emoji | text | no | | |
 | inserted_at | timestamptz | no | | |
 
-**Indexes:** unique `(message_id, member_id, emoji)`; `(conversation_id)`.
+**Indexes:** unique `(message_id, member_id, emoji)` — its prefix also serves the shape's `message_id IN (subquery)` filter.
 
-**⚡ Why `conversation_id` on attachments and reactions:** a shape's where-clause can only reference its own table's columns. A conversation screen needs messages *and* their reactions *and* attachments to arrive through shapes scoped to that conversation — so the child tables carry `conversation_id` themselves. It's immutable denormalization (a message never moves between conversations), set once at insert.
+No `conversation_id` on attachments or reactions: shapes scope them per conversation with a subquery through `messages` (shape doc, S9/S10).
 
 ## push_subscriptions
 
@@ -255,7 +246,7 @@ One row per member per emoji per message; the client aggregates to `{emoji, coun
 |---|---|
 | 1 | ⑂ `MuteState` (session 1) folded into `conversation_members` — same key, same consumer, one shape instead of two. |
 | 2 | ⑂ Announcement posts are `messages` rows with `title`/`post_emoji`, not a separate table — channels are conversations (session-1 R4), and reactions/attachments/shapes work identically for free. |
-| 3 | ⚡ Denormalization is reserved for two jobs only — never display composition, which TanStack DB live queries handle by joining collections client-side (review feedback). Job one, server-side row scoping (a shape's WHERE sees one table): `conversation_id` on `message_reactions`/`message_attachments`, `company_id` on `member_locations`. Job two, keeping the message firehose out of standing shapes: `last_message_*` on `conversations`, `unread_count` on `conversation_members`. |
+| 3 | ⑂⑂ **Zero denormalized columns** — the schema is fully normalized (two rounds of review feedback). Display composition: TanStack DB live queries join collections client-side. Server-side row scoping: shape where-clauses use subqueries across tables (behind the `allow_subqueries` feature flag on our pinned electric 1.1.10 — one config line). Message volume: subset snapshots sync a recent window per conversation instead of full history, so no `last_message_*`/`unread_count` shortcuts are needed. Earlier drafts had five denormalized columns; all are gone. |
 | 4 | `member_settings` split from `members` so private state (snooze, language) never rides the company-wide directory shape. |
 | 5 | uuid PKs everywhere, client-suppliable — TanStack DB optimistic writes need client-generated ids; `inserted_at` (not id) orders transcripts. |
 | 6 | `dm_key` + partial unique index = race-proof one-DM-per-pair without a junction lookup. |

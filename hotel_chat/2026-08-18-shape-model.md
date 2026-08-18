@@ -6,75 +6,87 @@ The read path is Electric shapes end to end: every screen renders from TanStack 
 
 ## Ground rules
 
-- A shape = one table + a `WHERE` clause over **that table's own columns** (+ optional column list). No server-side joins.
-- **TanStack DB live queries join across collections on the client**, so a screen that combines three tables is three raw-table shapes plus a client-side join — never a contorted shape or a display-composition column. Denormalization survives for exactly two jobs client joins can't do: letting the *server* scope which rows sync at all (`conversation_id` on reactions/attachments, `company_id` on `member_locations`), and keeping the message firehose out of standing shapes (`last_message_*`, `unread_count`) — data-model doc, decision 3.
+- A shape = one table + a `WHERE` clause + an optional column list. Where-clauses **can reference other tables through subqueries** (`x IN (SELECT …)`), so shapes scope rows relationally — memberships, tenancy — without any denormalized helper columns. Subquery-driven shapes are also *self-maintaining*: when the subquery's result set changes (you get added to a group), matching rows start flowing with no shape rebuild.
+- **TanStack DB live queries join across collections on the client**, so a screen that combines three tables is three raw-table shapes plus a client-side join — never a display-composition column.
+- **Subset snapshots** keep high-volume shapes windowed: a messages shape loads the most recent N rows first (`requestSnapshot` with orderBy/limit), keeps syncing everything newer live, and pages older history on demand. Full-history sync never happens.
+- Together these three mechanisms leave the schema **fully normalized** (data-model doc, decision 3).
 - Shapes are exposed through the Phoenix router / `sync_render` controller, so `$me` (member id) and `$company` are injected server-side from the session — the client never sends them. This is also the authorization story: you can't ask for a shape the router won't build for you.
-- Two lifecycles: **standing** shapes subscribe at app start and live for the session; **per-conversation** shapes are created when a chat is opened (and kept — WhatsApp-style local history accumulates).
-- Electric streams inserts/updates/deletes continuously after the snapshot; "cost" below is about the snapshot query, which is what the indexes must serve.
+- Electric streams inserts/updates/deletes continuously after the snapshot; "cost" below is about the snapshot and subquery evaluation, which is what the indexes must serve.
 
 ## Shape catalog
+
+`$my_convs` below abbreviates the membership subquery: `(SELECT conversation_id FROM conversation_members WHERE member_id = $me)`.
 
 | ID | Table | WHERE | Columns | Lifecycle |
 |----|-------|-------|---------|-----------|
 | **S1** `my_memberships` | conversation_members | `member_id = $me` | all | standing |
-| **S2** `my_conversations` | conversations | `id IN ($conv_ids)` — the ids from S1 | all | standing, **rebuilt on membership change** (see note 1) |
-| **S2b** `rosters` | conversation_members | `conversation_id IN ($conv_ids)` | conversation_id, member_id, added_by | standing, rebuilt with S2 (see notes 1, 2) |
+| **S2** `my_conversations` | conversations | `id IN $my_convs` | all | standing, self-maintaining |
+| **S2b** `rosters` | conversation_members | `conversation_id IN $my_convs` | conversation_id, member_id, added_by | standing, self-maintaining (note 2) |
 | **S3** `directory` | members | `company_id = $company AND active = true` | id, company_id, name, job_title, role, active | standing |
-| **S4** `member_locations` | member_locations | `company_id = $company` | all | standing |
+| **S4** `member_locations` | member_locations | `member_id IN (SELECT id FROM members WHERE company_id = $company)` | all | standing |
 | **S5** `locations` | locations | `company_id = $company` | id, company_id, name, city | standing |
 | **S6** `my_settings` | member_settings | `member_id = $me` | all | standing |
 | **S7** `my_schedule` | work_schedules | `member_id = $me` | all | standing |
-| **S8** `messages:{c}` | messages | `conversation_id = $c` | all | per-conversation |
-| **S9** `reactions:{c}` | message_reactions | `conversation_id = $c` | all | per-conversation |
-| **S10** `attachments:{c}` | message_attachments | `conversation_id = $c` | all | per-conversation |
+| **S8** `messages:{c}` | messages | `conversation_id = $c` | all | one per conversation in S1, created at startup; **initial subset snapshot = latest ~20** (`ORDER BY inserted_at DESC LIMIT 20`), live tail thereafter, older pages on scroll (note 1) |
+| **S9** `reactions:{c}` | message_reactions | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all | created when the chat is opened |
+| **S10** `attachments:{c}` | message_attachments | `message_id IN (SELECT id FROM messages WHERE conversation_id = $c)` | all | created when the chat is opened |
 
-Deliberate non-shapes: **presence** (Phoenix Presence over a channel — ephemeral), **push_subscriptions** (server-side only), **invites** (pre-auth; the onboarding screen talks to the API), **companies** (the client learns its company name via S5/session bootstrap — a one-row shape isn't worth a subscription; revisit if company-level settings grow).
+Deliberate non-shapes: **presence** (Phoenix Presence over a channel — ephemeral), **push_subscriptions** (server-side only), **invites** (pre-auth; the onboarding screen talks to the API), **companies** (the client learns its company name via S5/session bootstrap; revisit if company-level settings grow).
+
+**Note 1 — S8 is the chat list's data source too.** Because every conversation keeps a small recent-messages window synced from startup, the chat list derives its previews ("Elena: Floors 3–5 done…"), its recency ordering, and its unread badges from local data — which is why the schema carries no `last_message_*` or `unread_count` columns and a message insert touches exactly one row. Reactions/attachments (S9/S10) stay lazy: the list doesn't need them.
+
+**Note 2 — S2b, the joins workhorse.** One standing shape over the full rosters of my conversations feeds, via client-side joins, DM titles ("the member that isn't me" ⋈ S3), group tile member counts, channel audience lines, and the desktop members panel. Its column list — `conversation_id, member_id, added_by` only — is load-bearing: it keeps *other* members' private per-chat state (favorites, read cursors, mutes) out of my sync stream; my own full row still arrives via S1.
 
 ## Screens → shapes
 
 | Screen (session-2 mockup) | Shapes used | What renders from what |
 |---|---|---|
-| `/mobile/chats` (chat list) + desktop sidebar | S1 + S2 + S2b + S3 | S2: name, kind, emoji, `last_message_at` (order), `last_message_preview`; author first name = `last_message_author_id` ⋈ S3. S1: favorite/muted flags, `unread_count` badges. DM titles = S2b ⋈ S3 minus me; group tile member counts = count over S2b (**note 2**). All of it one live query joining four collections. |
-| `/mobile/chat-group`, `/mobile/chat-dm`, desktop conversation pane | S8 + S9 + S10 for the open `$c`; S3 for author names/avatars | transcript order = `inserted_at`; reply quotes resolve from the local S8 store; reactions aggregate client-side to `{emoji, count, mine}` |
+| `/mobile/chats` (chat list) + desktop sidebar | S1 + S2 + S2b + S3 + S8× | S2: name, kind, emoji. S8 windows: preview line + recency order (author first name ⋈ S3). S1: favorite/muted flags, `last_read_at` → unread badges vs S8. DM titles = S2b ⋈ S3 minus me; group member counts = count over S2b. One live query joining five collections. |
+| `/mobile/chat-group`, `/mobile/chat-dm`, desktop conversation pane | S8 + S9 + S10 for the open `$c`; S3 for author names/avatars | transcript order = `inserted_at`; older history pages in via further snapshot requests; reply quotes resolve from the local S8 store (a quote pointing outside the loaded window shows a fetch-on-tap stub); reactions aggregate client-side to `{emoji, count, mine}` |
 | `/mobile/channel`, `/mobile/channel-manager` | same as conversation (channels are conversations); S8 rows carry `title`/`post_emoji` | audience line ("Everyone at Bankside · 34") = count over S2b for the channel |
 | `/mobile/people` (directory) + new-chat picker | S3 + S4 + S5 | job title, role badge, location name per person |
-| `/mobile/profile` | S3 (own row) + S6 + S7 + S1 | schedule card (S7), snooze (S6), muted-chats list (S1 filtered) |
+| `/mobile/profile` | S3 (own row) + S6 + S7 + S1 (⋈ S2 for chat names) | schedule card (S7), snooze (S6), muted-chats list |
 | `/mobile/new-chat` | S3 (+ S4) | member picker; creation itself is an API write |
 | `/mobile/onboarding` | — | pre-auth, API-only (invite lookup, OTP, profile) |
 | Desktop members panel | S2b (rows for the open `$c`) ⋈ S3 | roster with names/titles — no per-conversation shape needed |
 
-**Note 1 — the IN-lists.** Electric where-clauses are fixed per shape, so S2 and S2b are parameterized by the membership set from S1 and must be re-created when S1 gains or loses a row (join/leave/added-to-group). That's a cheap, rare event, and TanStack DB re-initializes the collections transparently. Someone *else* joining a conversation I'm already in is just a new row inside the existing S2b shape — no rebuild.
+## Unread badges (derived, not stored)
 
-**Note 2 — S2b, the joins workhorse.** One standing shape over the full rosters of my conversations feeds, via client-side joins, everything an earlier draft solved with extra columns and per-conversation shapes: DM titles ("the member that isn't me" ⋈ S3), group tile member counts, channel audience lines, and the desktop members panel. Its column list — `conversation_id, member_id, added_by` only — is load-bearing: it keeps *other* members' private per-chat state (favorites, unread counts, read cursors, mutes) out of my sync stream; my own full row still arrives via S1.
+Unread for a conversation = count of S8 rows with `inserted_at > my last_read_at` (from S1), excluding my own messages. The count is naturally capped by the synced window — a chat with more unreads than the window shows "20+", which is standard messenger behavior. Reading a chat is one API write advancing `last_read_at`; S1 fans the cleared badge out to all of the member's devices. No counter maintenance anywhere.
 
 ## Index cross-check (the point of this exercise)
 
-Every shape's snapshot query, against the indexes declared in the data-model doc:
+Every shape's snapshot/subquery evaluation, against the indexes declared in the data-model doc:
 
-| Shape | Snapshot query shape | Serving index | Verdict |
+| Shape | Query shape | Serving index | Verdict |
 |---|---|---|---|
-| S1 | `WHERE member_id = $me` | `conversation_members (member_id)` | ✅ declared |
-| S2 | `WHERE id IN (…)` | PK | ✅ free |
-| S2b | `WHERE conversation_id IN (…)` | unique `(conversation_id, member_id)` prefix | ✅ free |
-| S3 | `WHERE company_id = $c AND active` | `members (company_id, active)` | ✅ declared |
-| S4 | `WHERE company_id = $c` | `member_locations (company_id)` | ✅ declared — exists *only* because of this shape |
-| S5 | `WHERE company_id = $c` | `locations (company_id)` | ✅ declared |
-| S6 | `WHERE member_id = $me` | PK (member_id) | ✅ free |
-| S7 | `WHERE member_id = $me` | unique `(member_id, weekday)` prefix | ✅ free |
-| S8 | `WHERE conversation_id = $c` | `messages (conversation_id, inserted_at)` | ✅ declared; the composite also hands Electric rows in transcript order and serves future time-windowed clauses (`AND inserted_at > …`) without a new index |
-| S9 | `WHERE conversation_id = $c` | `message_reactions (conversation_id)` | ✅ declared — exists only because of this shape (writes go by `message_id`) |
-| S10 | `WHERE conversation_id = $c` | `message_attachments (conversation_id)` | ✅ declared, same reason |
+| S1 | `member_id = $me` | `conversation_members (member_id)` | ✅ declared |
+| S2 | subquery: `conversation_members.member_id = $me` → root: `id IN (…)` | `conversation_members (member_id)`; PK | ✅ free |
+| S2b | same subquery → root: `conversation_id IN (…)` | unique `(conversation_id, member_id)` prefix | ✅ free |
+| S3 | `company_id = $c AND active` | `members (company_id, active)` | ✅ declared |
+| S4 | subquery: `members.company_id = $c` → root: `member_id IN (…)` | `members (company_id, active)` prefix; PK `(member_id, location_id)` prefix | ✅ free |
+| S5 | `company_id = $c` | `locations (company_id)` | ✅ declared |
+| S6 | `member_id = $me` | PK (member_id) | ✅ free |
+| S7 | `member_id = $me` | unique `(member_id, weekday)` prefix | ✅ free |
+| S8 | `conversation_id = $c` (+ snapshot `ORDER BY inserted_at DESC LIMIT n`) | `messages (conversation_id, inserted_at)` — filter, order, and window paging off one composite | ✅ declared |
+| S9 | subquery: `messages.conversation_id = $c` → root: `message_id IN (…)` | `messages (conversation_id, inserted_at)` prefix; unique `(message_id, member_id, emoji)` prefix | ✅ free |
+| S10 | same subquery → root: `message_id IN (…)` | `message_attachments (message_id)` | ✅ declared (also the FK's natural index) |
 
-Conclusion: **no missing indexes, and three indexes exist solely for shapes** (S4, S9, S10) — they'd be dead weight in a non-sync design and are called out as such in the data-model doc.
+Conclusion: **no missing indexes — and no shape-only indexes either.** Every index in the data-model doc is justified by a key, an FK, or a write-path lookup; the shapes ride along for free. (Two earlier drafts carried three shape-only indexes and five denormalized columns; subqueries + client joins + subset snapshots eliminated all of them.)
 
 Write-path indexes are separate and already covered: `dm_key` partial unique (DM creation race), `(company_id, phone)` partials/lookups (login, invites), FK cascades.
 
+## Runtime requirements ⚠ (review decision)
+
+The shape features this design leans on, versus what the backend scaffold currently runs (embedded electric **1.1.10**, pinned by phoenix_sync 0.6.1):
+
+| Feature | Current Electric | Our embedded 1.1.10 |
+|---|---|---|
+| Subqueries in where-clauses | ✅ GA | ✅ present, behind a feature flag — `config :electric, feature_flags: ["allow_subqueries"]` (verified: flows through `Electric.Application.api_plug_opts` into the embedded API) |
+| Subset snapshots (`requestSnapshot`, orderBy/limit, history paging) | ✅ | ❌ not in 1.1.10 |
+
+So S8's windowed loading needs one of: **(a)** lift the electric pin (`override: true` past phoenix_sync's `<= 1.1.10` constraint — compatibility with its embedded adapter unverified), **(b)** run current Electric as a separate service and switch phoenix_sync to `:http` mode (deviates from the brief's embedded mode), or **(c)** MVP fallback — a time-window where-clause (`conversation_id = $c AND inserted_at >= $t`, `$t` fixed at subscribe time, same composite index) with API-paginated older history, upgrading to subset snapshots when the pin lifts. The schema is identical in all three; this is purely a runtime/version decision. Also to verify at implementation time: phoenix_sync's `sync`/`sync_render` passing subquery where-clauses through unchanged, and TanStack DB's Electric collection exposing snapshot requests.
+
 ## Volume sanity check
 
-One location ≈ 34 staff, ~20 active conversations, low-hundreds of messages/day. Standing shapes are tiny (tens of rows). The heavy tail is S8 over a long-lived channel or group — months of history in one snapshot. Fine for the MVP; the pressure valve is already schema-compatible: a time-windowed where clause (`conversation_id = $c AND inserted_at > now() - interval '90 days'`) served by the same composite index, with older history behind an API-paginated "load earlier" (explicitly post-MVP).
-
-## Unread & read-cursor flow (ties the two docs together)
-
-1. Message insert (API write) → same transaction: bump `conversations.last_message_*`, increment `unread_count` for other members.
-2. Electric fans out: S2 moves the chat's card up with the new preview; S1 delivers the new badge count. Chat list repaints with **zero queries**.
-3. Member reads the chat → API write advances `last_read_at`, zeroes `unread_count` → S1 clears the badge on every one of their devices.
+One location ≈ 34 staff, ~20 active conversations, low-hundreds of messages/day. Standing shapes are tens-of-rows small. S8 is ~20 conversations × ~20-message windows ≈ a few hundred rows at startup, then live tail only — the full-history snapshot problem is gone by construction. S9/S10 sync all reactions/attachments of an *opened* conversation (their subquery spans the whole conversation, not the window); both are small tables, and windowing them can piggyback on whatever S8 windowing mechanism review picks if it ever matters.

@@ -19,6 +19,7 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@tanstack/intent": "^0.3.6",
     "@tanstack/router-plugin": "^1.168.32",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",

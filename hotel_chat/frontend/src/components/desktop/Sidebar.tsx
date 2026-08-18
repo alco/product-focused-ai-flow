@@ -19,11 +19,14 @@ export function Sidebar({ activeChatId }: { activeChatId?: string }) {
   return (
     <aside className="desktop-sidebar">
       <header className="sidebar-header">
-        {me && <Avatar name={me.name} size={34} />}
-        <div className="sidebar-id">
-          <div className="sidebar-title">{location?.name}</div>
-          <div className="sidebar-subtitle">{session.companyName}</div>
-        </div>
+        {/* Company identity links back to the landing pane (no chat open) */}
+        <Link to="/chats" className="sidebar-home">
+          {me && <Avatar name={me.name} size={34} />}
+          <div className="sidebar-id">
+            <div className="sidebar-title">{location?.name}</div>
+            <div className="sidebar-subtitle">{session.companyName}</div>
+          </div>
+        </Link>
         <button type="button" className="sidebar-new" aria-label="New chat">
           ✏️
         </button>

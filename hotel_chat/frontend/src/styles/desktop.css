@@ -32,6 +32,25 @@
   padding: 0.5rem 0.75rem 0.5rem 1rem;
 }
 
+/* Clickable identity block: avatar + names → back to the landing pane */
+.sidebar-home {
+  align-items: center;
+  border-radius: var(--radius);
+  color: inherit;
+  display: flex;
+  flex: 1;
+  gap: 0.625rem;
+  margin: -0.25rem -0.375rem;
+  min-width: 0;
+  padding: 0.25rem 0.375rem;
+  text-decoration: none;
+}
+
+.sidebar-home:hover {
+  background: var(--muted);
+  text-decoration: none;
+}
+
 .sidebar-id {
   flex: 1;
   line-height: 1.25;

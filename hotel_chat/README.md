@@ -8,17 +8,18 @@ One-time setup, then one script:
 
 ```sh
 # 1. From hotel_chat/: Postgres (wal_level=logical) + Electric sync service (:3000)
+#    — needed once up front so `mix setup` below has a database to migrate.
 docker compose up -d
 
 # 2. Install deps (first time only)
 (cd frontend && pnpm install)
 (cd backend && mix setup)   # deps.get + ecto.create/migrate + db.seed
 
-# 3. From hotel_chat/: Vite + Phoenix + Caddy together, Ctrl-C stops all three
+# 3. From hotel_chat/: Postgres/Electric + Vite + Phoenix + Caddy together
 ./run.sh
 ```
 
-`run.sh` starts `pnpm dev` (frontend/) and `mix phx.server` (backend/) in the background and Caddy in the foreground; killing it (Ctrl-C) tears down all three, including their child processes (Vite's node process, the BEAM VM) — see the script for the process-group mechanics. Run the three pieces by hand instead (`pnpm dev` in `frontend/`, `mix phx.server` in `backend/`, `caddy run --config Caddyfile` here) if you want them in separate terminals.
+`run.sh` runs `docker compose up -d` (idempotent — harmless if it's already up), then starts `pnpm dev` (frontend/) and `mix phx.server` (backend/) in the background and Caddy in the foreground; Ctrl-C tears down the frontend/backend/Caddy trio, including their child processes (Vite's node process, the BEAM VM) — see the script for the process-group mechanics. Postgres/Electric are left running (long-lived, no reason to cycle them). Run the pieces by hand instead (`docker compose up -d`, `pnpm dev` in `frontend/`, `mix phx.server` in `backend/`, `caddy run --config Caddyfile` here) if you want them in separate terminals.
 
 Open **`https://localhost:5443`** (Caddy, see below) or plain `http://localhost:5173` (Vite directly — works fine, just capped at 6 concurrent HTTP/1.1 connections). Vite's dev-server proxy forwards `/api` to Phoenix so everything is same-origin from the browser's perspective (`vite.config.ts`'s `server.proxy`), and since Electric sync routes live under `/api/sync`, that one proxy entry covers both.
 

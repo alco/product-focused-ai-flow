@@ -3,6 +3,7 @@
 // favorites, all chats. Identity comes from the directory/locations
 // collections; the company name arrives via session bootstrap.
 
+import { Link } from '@tanstack/react-router'
 import { Avatar } from '../Avatar'
 import { ChatSections } from '../ChatRow'
 import { session } from '../../db/session'
@@ -37,6 +38,12 @@ export function Sidebar({ activeChatId }: { activeChatId?: string }) {
 
       <div className="sidebar-scroll">
         <ChatSections activeChatId={activeChatId} />
+      </div>
+
+      <div className="sidebar-footer">
+        <Link to="/new-chat" className="btn btn-primary btn-block">
+          New group chat
+        </Link>
       </div>
     </aside>
   )

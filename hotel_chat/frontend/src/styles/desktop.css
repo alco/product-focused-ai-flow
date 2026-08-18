@@ -84,6 +84,13 @@
   overflow-y: auto;
 }
 
+/* Pinned footer with the new-group-chat action */
+.sidebar-footer {
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+}
+
 /* Currently open conversation */
 .chat-row--active {
   background: var(--muted);

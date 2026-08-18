@@ -24,5 +24,7 @@ A mobile-first PWA giving a hotel's on-site staff WhatsApp-grade internal chat p
 | `2026-08-18-session-1-log.md` | Session 1 round-by-round decision log (scope + feature set) |
 | `2026-08-18-session-1-summary.md` | Session 1 summary: premise, decisions/forks, vision + conceptual architecture |
 | `2026-08-18-session-2-prep.md` | Agenda and inputs for session 2 (UI mockups) |
+| `2026-08-18-brand-guidelines.md` | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns |
+| `brand/sona-brand.css` | Shared stylesheet encoding the brand tokens, for mockups and later the app |
 
-**Roadmap:** session 1 mapped the MVP scope ✔ → session 2 produces UI mockups → a subsequent session introduces the tech stack and the backend implementation plan → build.
+**Roadmap:** session 1 mapped the MVP scope ✔ → brand research ✔ → session 2 produces UI mockups → a subsequent session introduces the tech stack and the backend implementation plan → build.

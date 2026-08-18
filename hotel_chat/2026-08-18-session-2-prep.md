@@ -21,16 +21,21 @@ Desktop (after mobile settles):
 
 ## Decisions to resolve visually
 
-- How "official vs organic" distinction reads: section styling, channel iconography, color accents?
+- How "official vs organic" distinction reads: section styling, channel iconography, color accents? (Candidate from brand research: lime tint = official signature, echoing Sona's category color-coding.)
 - Announcement posts: styled as cards (title-ish, roomier) vs plain chat bubbles?
 - Unread/badge and mute-state treatments in the list.
 - Empty states: fresh install, empty location channel, no favorites yet.
-- **Visual identity: none chosen yet** — product has no name, palette, or type direction. Suggest opening session 2 here (even a placeholder identity keeps mockups coherent).
+- ~~Visual identity: none chosen yet~~ **Resolved 2026-08-18:** brand identity distilled from www.sona.ai into `2026-08-18-brand-guidelines.md` + shared stylesheet `brand/sona-brand.css` (Sora + IBM Plex Mono, stone/lime/navy system, tokens + component classes). Mockup pages link the shared CSS and inline only page-specific styles.
 
 ## Inputs wanted from Oleksii
 
-- Product/working name, any brand constraints or aesthetic references (apps whose feel we should echo or avoid).
+- Product/working name (wordmark treatment is specified in the brand guidelines; the name itself is still open).
 - Whether mockups should be built with the visual companion (browser) or as committed HTML/artifact files in this repo — the latter keeps them in Git history alongside the logs.
+
+## Stack context (shared by Oleksii, 2026-08-18 — for later sessions, not session 2)
+
+- Frontend implementation: **TypeScript, React** (visuals), **TanStack DB** (local data model), **Vite** (build), **vitest** (tests).
+- Session 2 output remains static HTML pages with custom styles inlined + the single shared brand CSS; the brand tokens then carry into the React app as the global stylesheet.
 
 ## Session-1 constraints the mockups must respect
 

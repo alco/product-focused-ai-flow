@@ -270,3 +270,134 @@
   padding: 0;
   width: 36px;
 }
+
+/* --- Write-path affordances (reply chip, reactions, message actions) ------ */
+/* Appended by the messaging-features work; the composer is now a column so a
+   reply-quote chip can sit above the input row. */
+
+.composer {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.composer-row {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.composer-reply {
+  align-items: center;
+  background: var(--muted);
+  border-left: 3px solid var(--sona-dark);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.375rem;
+  padding: 0.375rem 0.625rem;
+}
+
+.composer-reply-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.composer-reply-author {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.composer-reply-quote {
+  color: var(--subtle-foreground);
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-reply-cancel {
+  background: none;
+  border: none;
+  color: var(--subtle-foreground);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+/* Reaction chips became buttons (tap to join a reaction). */
+button.reaction-chip {
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.reaction-chip:disabled {
+  cursor: default;
+}
+
+.msg-actions {
+  display: flex;
+  gap: 0.375rem;
+  margin-top: 0.125rem;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.msg-row:hover .msg-actions,
+.msg-actions:focus-within {
+  opacity: 1;
+}
+
+/* Touch devices have no hover — keep the affordances visible. */
+@media (hover: none) {
+  .msg-actions {
+    opacity: 1;
+  }
+}
+
+.msg-action-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--subtle-foreground);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  line-height: 1;
+  padding: 0.1875rem 0.375rem;
+}
+
+.msg-action-btn:hover {
+  background: var(--muted);
+  color: var(--foreground);
+}
+
+.emoji-picker {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  gap: 0.125rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem;
+  width: fit-content;
+}
+
+.emoji-picker-btn {
+  background: none;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+.emoji-picker-btn:hover {
+  background: var(--muted);
+}

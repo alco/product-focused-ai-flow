@@ -9,20 +9,26 @@
 // Everything renders from the collections via useConversation.
 import { createFileRoute } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
+import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { Avatar } from '../../components/Avatar'
 import { Composer } from '../../components/chat/Composer'
+import type { ReplyTarget } from '../../components/chat/Composer'
+import { MarkReadSentinel } from '../../components/chat/MarkReadSentinel'
 import { ConversationTopBar } from '../../components/chat/ConversationTopBar'
 import { GroupCircles } from '../../components/GroupCircles'
 import { MessageList } from '../../components/chat/MessageList'
 import { MembersPanel } from '../../components/desktop/MembersPanel'
 import { TopbarNav } from '../../components/desktop/TopbarNav'
+import { AnnouncementComposer } from '../../components/channel/AnnouncementComposer'
 import { AnnouncementFeed } from '../../components/channel/AnnouncementFeed'
 import { ChannelTopbar } from '../../components/channel/ChannelTopbar'
 import { useIsDesktop } from '../../hooks/useIsDesktop'
 import { useConversation } from '../../hooks/useConversation'
 import { locationsCollection } from '../../db/collections'
 import { conversationTitle } from '../../db/derive'
+import type { Message } from '../../db/schema'
+import { addReaction } from '../../db/mutations'
 import { onlineMemberIds } from '../../db/presence'
 import { session } from '../../db/session'
 import '../../styles/conversation.css'
@@ -77,6 +83,7 @@ function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop:
         reactions={data.reactions}
         membersById={data.membersById}
         showAddReaction
+        onReact={addReaction}
       />
     ) : (
       <p className="text-muted" style={{ padding: '1.5rem' }}>
@@ -84,7 +91,13 @@ function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop:
       </p>
     )
 
-  const footer = (
+  const sentinel = <MarkReadSentinel conversationId={conversation.id} />
+
+  // TEMPORARY(auth): gate on the ?can_post_announcements query-param flag
+  // until real auth provides the member's server-side permission.
+  const footer = session.canPostAnnouncements ? (
+    <AnnouncementComposer conversationId={conversation.id} />
+  ) : (
     <footer className="channel-footer">
       <span className="channel-footer-note">◆ Only managers can post</span>
     </footer>
@@ -94,7 +107,10 @@ function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop:
     return (
       <div className="phone">
         <ChannelTopbar channel={{ name: conversation.name ?? '', audience }} backTo="/chats" />
-        <div className="phone-scroll channel-scroll">{feed}</div>
+        <div className="phone-scroll channel-scroll">
+          {feed}
+          {sentinel}
+        </div>
         {footer}
       </div>
     )
@@ -107,7 +123,10 @@ function ChannelScreen({ data, isDesktop }: { data: ConversationData; isDesktop:
         actions={<TopbarNav />}
       />
       <div className="channel-scroll desktop-convo">
-        <div className="desktop-feed">{feed}</div>
+        <div className="desktop-feed">
+          {feed}
+          {sentinel}
+        </div>
       </div>
       {footer}
     </main>
@@ -124,6 +143,15 @@ function ConversationScreen({
   const conversation = data.conversation!
   const isGroup = conversation.kind === 'group'
   const title = conversationTitle(conversation, data.roster, data.membersById, session.memberId)
+  const [replyTo, setReplyTo] = useState<ReplyTarget | undefined>(undefined)
+
+  const startReply = (message: Message) => {
+    const author =
+      message.author_id === session.memberId
+        ? 'You'
+        : (data.membersById.get(message.author_id)?.name ?? 'Former teammate')
+    setReplyTo({ messageId: message.id, authorName: author, text: message.body ?? '' })
+  }
 
   const otherId = conversation.kind === 'dm'
     ? data.roster.find((r) => r.member_id !== session.memberId)?.member_id
@@ -164,6 +192,8 @@ function ConversationScreen({
         reactions={data.reactions}
         membersById={data.membersById}
         showAuthors={isGroup}
+        onReply={startReply}
+        onReact={addReaction}
       />
     ) : (
       <p className="text-muted" style={{ padding: '1.5rem' }}>
@@ -171,12 +201,24 @@ function ConversationScreen({
       </p>
     )
 
+  const composer = (
+    <Composer
+      conversationId={conversation.id}
+      replyTo={replyTo}
+      onCancelReply={() => setReplyTo(undefined)}
+    />
+  )
+  const sentinel = <MarkReadSentinel conversationId={conversation.id} />
+
   if (!isDesktop) {
     return (
       <div className="phone">
         {topbar}
-        <div className="phone-scroll convo-scroll">{transcript}</div>
-        <Composer />
+        <div className="phone-scroll convo-scroll">
+          {transcript}
+          {sentinel}
+        </div>
+        {composer}
       </div>
     )
   }
@@ -189,9 +231,12 @@ function ConversationScreen({
       <div className="desktop-body">
         <div className="desktop-chat-col">
           <div className="convo-scroll desktop-convo">
-            <div className="desktop-transcript">{transcript}</div>
+            <div className="desktop-transcript">
+              {transcript}
+              {sentinel}
+            </div>
           </div>
-          <Composer />
+          {composer}
         </div>
         {isGroup && data.rosterMembers.length > 0 && (
           <MembersPanel members={data.rosterMembers} />

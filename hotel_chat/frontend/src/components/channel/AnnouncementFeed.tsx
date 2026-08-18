@@ -3,12 +3,13 @@
 // deliberately not chat bubbles. Posts are ordinary message rows with
 // title/post_emoji set; day headers and reaction chips are derived here.
 
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
 import type { Member, Message, MessageReaction } from '../../db/schema'
 import { session } from '../../db/session'
 import { aggregateReactions } from '../../db/derive'
 import { dayLabel, sameDay, timeLabel } from '../../lib/time'
 import { Avatar } from '../Avatar'
+import { EmojiPicker } from '../chat/ReactionChips'
 
 interface FeedProps {
   /** The channel's messages, ascending by inserted_at. */
@@ -19,6 +20,8 @@ interface FeedProps {
   showAddReaction?: boolean
   /** Manager view: posts by this author get a small edit affordance. */
   editableAuthorId?: string
+  /** When set, the "+" chip opens a picker and chips are tappable. */
+  onReact?: (messageId: string, emoji: string) => void
 }
 
 export function AnnouncementFeed({
@@ -27,6 +30,7 @@ export function AnnouncementFeed({
   membersById,
   showAddReaction,
   editableAuthorId,
+  onReact,
 }: FeedProps) {
   const groups: { day: string; posts: Message[] }[] = []
   for (const post of posts) {
@@ -48,6 +52,7 @@ export function AnnouncementFeed({
               author={membersById.get(post.author_id)}
               showAddReaction={showAddReaction}
               editable={editableAuthorId != null && post.author_id === editableAuthorId}
+              onReact={onReact}
             />
           ))}
         </Fragment>
@@ -62,14 +67,17 @@ function AnnouncementCard({
   author,
   showAddReaction,
   editable,
+  onReact,
 }: {
   post: Message
   reactions: MessageReaction[]
   author: Member | undefined
   showAddReaction?: boolean
   editable?: boolean
+  onReact?: (messageId: string, emoji: string) => void
 }) {
   const chips = aggregateReactions(reactions, session.memberId)
+  const [pickerOpen, setPickerOpen] = useState(false)
   return (
     <article className="post-card">
       <div className="post-head">
@@ -96,14 +104,41 @@ function AnnouncementCard({
         </div>
       )}
       <div className="post-reactions">
-        {chips.map((chip) => (
-          <span key={chip.emoji} className={chip.mine ? 'ann-chip ann-chip--mine' : 'ann-chip'}>
-            {chip.emoji}
-            <span className="reaction-count">{chip.count}</span>
-          </span>
-        ))}
-        {showAddReaction && <span className="ann-chip ann-chip--add">+</span>}
+        {chips.map((chip) => {
+          const clickable = onReact !== undefined && !chip.mine
+          return (
+            <button
+              key={chip.emoji}
+              type="button"
+              className={chip.mine ? 'ann-chip ann-chip--mine' : 'ann-chip'}
+              disabled={!clickable}
+              onClick={clickable ? () => onReact(post.id, chip.emoji) : undefined}
+            >
+              {chip.emoji}
+              <span className="reaction-count">{chip.count}</span>
+            </button>
+          )
+        })}
+        {showAddReaction && (
+          <button
+            type="button"
+            className="ann-chip ann-chip--add"
+            aria-label="Add reaction"
+            disabled={onReact === undefined}
+            onClick={() => setPickerOpen((open) => !open)}
+          >
+            +
+          </button>
+        )}
       </div>
+      {onReact && pickerOpen && (
+        <EmojiPicker
+          onPick={(emoji) => {
+            onReact(post.id, emoji)
+            setPickerOpen(false)
+          }}
+        />
+      )}
     </article>
   )
 }

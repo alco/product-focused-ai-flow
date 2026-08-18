@@ -434,3 +434,16 @@
   background-color: var(--lime-400);
   color: var(--foreground);
 }
+
+/* --- New-chat picker wiring (appended by the messaging-features work) ------ */
+
+/* Selection chips became buttons (tap to unselect). */
+button.chip {
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.person-row {
+  cursor: pointer;
+}

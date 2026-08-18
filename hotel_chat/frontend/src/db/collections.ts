@@ -36,7 +36,9 @@
 
 import { createCollection } from '@tanstack/react-db'
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
+import type { ElectricCollectionConfig } from '@tanstack/electric-db-collection'
 import type { Row } from '@electric-sql/client'
+import { postJson } from './api'
 import type {
   Conversation,
   ConversationMember,
@@ -57,6 +59,11 @@ const shapeCollection = <T extends Row<unknown>>(
   shape: string,
   getKey: (row: T) => string,
   withTimestamps = false,
+  // Optimistic write-path handlers (onInsert/onUpdate): each one POSTs to
+  // the Phoenix API and returns the write's Postgres txid, so TanStack DB
+  // drops the optimistic overlay exactly when the write syncs back through
+  // Electric (the txid contract — see db/api.ts).
+  handlers: Pick<ElectricCollectionConfig<T>, 'onInsert' | 'onUpdate' | 'onDelete'> = {},
 ) =>
   createCollection(
     electricCollectionOptions<T>({
@@ -70,6 +77,7 @@ const shapeCollection = <T extends Row<unknown>>(
         parser: withTimestamps ? { timestamp: timestampParser } : undefined,
       },
       getKey,
+      ...handlers,
     }),
   )
 
@@ -78,6 +86,25 @@ export const membershipsCollection = shapeCollection<ConversationMember>(
   'my_memberships',
   (r) => r.id,
   true,
+  {
+    // The only membership update the client makes today is advancing its
+    // read cursor (db/mutations.ts markConversationRead).
+    onUpdate: async ({ transaction }) => {
+      const txids = await Promise.all(
+        transaction.mutations.map(async (m) => {
+          if (!('last_read_at' in m.changes)) {
+            throw new Error('only read-cursor updates are supported')
+          }
+          const res = await postJson(
+            `/api/conversations/${m.modified.conversation_id}/read`,
+            {},
+          )
+          return res.txid
+        }),
+      )
+      return { txid: txids }
+    },
+  },
 )
 
 /** S2 — every conversation I'm a member of. */
@@ -116,13 +143,57 @@ export const settingsCollection = shapeCollection<MemberSettings>(
 export const scheduleCollection = shapeCollection<WorkSchedule>('my_schedule', (r) => r.id)
 
 /** S8 — recent-message windows of my conversations (chat list + transcripts). */
-export const messagesCollection = shapeCollection<Message>('messages', (r) => r.id, true)
+export const messagesCollection = shapeCollection<Message>('messages', (r) => r.id, true, {
+  // One insert handler covers the three message-shaped writes — plain
+  // message, reply, announcement — routed to their separate endpoints by
+  // the shape of the row (db/mutations.ts constructs them).
+  onInsert: async ({ transaction }) => {
+    const txids = await Promise.all(
+      transaction.mutations.map(async (m) => {
+        const row = m.modified
+        const res =
+          row.title !== null || row.post_emoji !== null
+            ? await postJson(`/api/conversations/${row.conversation_id}/announcements`, {
+                id: row.id,
+                title: row.title,
+                body: row.body,
+                post_emoji: row.post_emoji,
+              })
+            : row.reply_to_id !== null
+              ? await postJson(`/api/messages/${row.reply_to_id}/replies`, {
+                  id: row.id,
+                  body: row.body,
+                })
+              : await postJson(`/api/conversations/${row.conversation_id}/messages`, {
+                  id: row.id,
+                  body: row.body,
+                })
+        return res.txid
+      }),
+    )
+    return { txid: txids }
+  },
+})
 
 /** S9 — per-member reaction rows; chips aggregate client-side. */
 export const reactionsCollection = shapeCollection<MessageReaction>(
   'reactions',
   (r) => r.id,
   true,
+  {
+    onInsert: async ({ transaction }) => {
+      const txids = await Promise.all(
+        transaction.mutations.map(async (m) => {
+          const res = await postJson(`/api/messages/${m.modified.message_id}/reactions`, {
+            id: m.modified.id,
+            emoji: m.modified.emoji,
+          })
+          return res.txid
+        }),
+      )
+      return { txid: txids }
+    },
+  },
 )
 
 /** S10 — message attachments. */

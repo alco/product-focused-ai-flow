@@ -1,10 +1,14 @@
 // frontend/src/routes/new-chat.tsx
-// Member picker over the directory collection. The selection is mocked
-// mid-action (creation itself will be an API write, not a collection concern).
-import { createFileRoute, Link } from '@tanstack/react-router'
+// Member picker over the directory collection. Creation is an optimistic
+// API write (db/mutations createConversation): one selected person makes a
+// DM (reusing an existing one via its canonical dm_key when present),
+// several make a group.
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
+import { useState } from 'react'
 import { Avatar } from '../components/Avatar'
-import { directoryCollection } from '../db/collections'
+import { conversationsCollection, directoryCollection } from '../db/collections'
+import { createConversation } from '../db/mutations'
 import { onlineMemberIds } from '../db/presence'
 import { session } from '../db/session'
 import '../styles/session2-screens.css'
@@ -13,15 +17,51 @@ export const Route = createFileRoute('/new-chat')({
   component: NewChatScreen,
 })
 
-// Mocked mid-action: group mode with three people already selected.
-const selectedIds = ['amira', 'jamal', 'hannah']
-
 function NewChatScreen() {
+  const navigate = useNavigate()
   const { data: members } = useLiveQuery((q) => q.from({ d: directoryCollection }))
+  const { data: conversations } = useLiveQuery((q) => q.from({ c: conversationsCollection }))
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const [groupName, setGroupName] = useState('')
+
   const selectedPeople = members.filter((m) => selectedIds.includes(m.id))
   const candidates = members
     .filter((m) => m.id !== session.memberId)
     .sort((a, b) => a.name.localeCompare(b.name))
+
+  const toggle = (id: string) =>
+    setSelectedIds((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id],
+    )
+
+  const isGroup = selectedIds.length > 1
+  const canCreate =
+    selectedIds.length === 1 || (isGroup && groupName.trim().length > 0)
+
+  const create = () => {
+    if (!canCreate) return
+    if (selectedIds.length === 1) {
+      // One DM per pair: reuse the existing conversation via its canonical
+      // dm_key (sorted pair of member ids) instead of asking the server to
+      // create a duplicate it would reject anyway.
+      const dmKey = [session.memberId, selectedIds[0]].sort().join(':')
+      const existing = conversations.find((c) => c.dm_key === dmKey)
+      if (existing) {
+        navigate({ to: '/chat/$chatId', params: { chatId: existing.id } })
+        return
+      }
+      const { id } = createConversation({ kind: 'dm', memberIds: selectedIds })
+      navigate({ to: '/chat/$chatId', params: { chatId: id } })
+    } else {
+      const { id } = createConversation({
+        kind: 'group',
+        name: groupName.trim(),
+        memberIds: selectedIds,
+      })
+      navigate({ to: '/chat/$chatId', params: { chatId: id } })
+    }
+  }
 
   return (
     <div className="phone">
@@ -40,35 +80,47 @@ function NewChatScreen() {
           Search name or role
         </div>
 
-        <div className="group-strip">
-          <div className="section-label">New group · {selectedPeople.length} selected</div>
-          <div className="chip-row">
-            {selectedPeople.map((person) => (
-              <span key={person.id} className="chip">
-                <Avatar name={person.name} size={24} />
-                {person.name}
-                <span className="chip-x" aria-hidden>
-                  ✕
-                </span>
-              </span>
-            ))}
+        {selectedIds.length > 0 && (
+          <div className="group-strip">
+            <div className="section-label">
+              {isGroup ? `New group · ${selectedPeople.length} selected` : 'New chat'}
+            </div>
+            <div className="chip-row">
+              {selectedPeople.map((person) => (
+                <button
+                  key={person.id}
+                  type="button"
+                  className="chip"
+                  onClick={() => toggle(person.id)}
+                >
+                  <Avatar name={person.name} size={24} />
+                  {person.name}
+                  <span className="chip-x" aria-hidden>
+                    ✕
+                  </span>
+                </button>
+              ))}
+            </div>
+            {isGroup && (
+              <div className="group-name-field">
+                <input
+                  className="text-input"
+                  type="text"
+                  value={groupName}
+                  onChange={(e) => setGroupName(e.target.value)}
+                  placeholder="Group name"
+                  aria-label="Group name"
+                />
+              </div>
+            )}
           </div>
-          <div className="group-name-field">
-            <input
-              className="text-input"
-              type="text"
-              defaultValue="Lobby Refresh Project"
-              placeholder="Group name"
-              aria-label="Group name"
-            />
-          </div>
-        </div>
+        )}
 
         <ul className="people-list">
           {candidates.map((person) => {
             const checked = selectedIds.includes(person.id)
             return (
-              <li key={person.id} className="person-row">
+              <li key={person.id} className="person-row" onClick={() => toggle(person.id)}>
                 <span className={`check-circle${checked ? ' checked' : ''}`} aria-hidden>
                   ✓
                 </span>
@@ -91,8 +143,13 @@ function NewChatScreen() {
       </div>
 
       <div className="newchat-footer">
-        <button type="button" className="btn btn-primary btn-block">
-          Create group chat
+        <button
+          type="button"
+          className="btn btn-primary btn-block"
+          disabled={!canCreate}
+          onClick={create}
+        >
+          {isGroup ? 'Create group chat' : 'Start chat'}
         </button>
       </div>
     </div>

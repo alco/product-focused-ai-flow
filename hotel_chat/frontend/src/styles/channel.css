@@ -282,3 +282,20 @@
   font-size: 0.875rem;
   padding: 0.5rem 1.125rem;
 }
+
+/* --- Write-path affordances (appended by the messaging-features work) ------ */
+
+/* Announcement reaction chips became buttons (tap to join a reaction). */
+button.ann-chip {
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+button.ann-chip:disabled {
+  cursor: default;
+}
+
+.post-card .emoji-picker {
+  margin-top: 0.5rem;
+}

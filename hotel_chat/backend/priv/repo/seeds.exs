@@ -120,7 +120,12 @@ Repo.insert_all(
 
 # --- Conversations ---------------------------------------------------------------
 
-dm_key = fn a, b -> Enum.sort([a, b]) |> Enum.join(":") end
+# Canonical DM-uniqueness key: sorted *member ids* (data-model.md,
+# `least(member_a, member_b) ‖ ':' ‖ greatest(...)`) — the write path
+# (HotelChat.Conversations.create_conversation) and the client's DM-dedupe
+# lookup both compute it from ids, so seeds must too or seeded DMs escape
+# the one-DM-per-pair constraint.
+dm_key = fn a, b -> Enum.sort([member_id.(a), member_id.(b)]) |> Enum.join(":") end
 
 group_conversations = [
   %{slug: "company-channel", kind: "company_channel", name: "Harbourlight Hotels"},

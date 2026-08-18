@@ -1,0 +1,64 @@
+# Hotel Chat — Session 3 Summary: Backend Scaffold
+
+**Date:** 2026-08-18 · **Format:** autonomous execution by Claude, Oleksii steering by brief · **Brief:** `2026-08-18-backend-arch-ai-brief.md` (repo root) · **Previous:** `2026-08-18-session-2-summary.md`
+
+## 1. Premise
+
+Session 2 closed with the frontend mockups done and the backend stack decided in the brief: Elixir + Phoenix, **Electric sync running in embedded mode (as a library)**, Postgres, dev environment codified in docker compose. This session's job: scaffold `hotel_chat/backend` so that one Phoenix app serves three surfaces from one origin — the custom backend API (`/api/group_chats` as the placeholder), Electric's shape HTTP API, and the built SPA — plus a top-level release workflow that bundles the frontend into the backend's Docker image. Explicit constraint: the frontend was off-limits (one exception granted afterwards: the Vite proxy entry).
+
+## 2. Key decisions and forks in the road
+
+| # | Topic | Decision |
+|---|-------|----------|
+| 1 | Electric integration | `phoenix_sync` 0.6.1 in `:embedded` mode — Electric compiled in as a library, consuming the Repo's own DB config; no separate sync service, no internal HTTP hop. Consequence accepted: phoenix_sync pins `electric >= 1.1.9 and <= 1.1.10`, so embedded Electric is 1.1.10, not the current 1.7.x. |
+| 2 | Routing topology | Everything the browser calls lives under `/api`: custom API at `/api/*` (controllers), Electric's shape protocol at `/api/sync/*` via the `sync` router macro (`sync "/group_chats", HotelChat.Chats.GroupChat`). One prefix means **a single Vite proxy entry covers both** — no CORS anywhere, dev or prod. |
+| 3 | SPA serving | `Plug.Static` (before the router; `index.html` added to `static_paths`) serves the built frontend out of `priv/static`; a `:browser` catch-all `get "/*path"` returns `index.html` so TanStack Router deep links and hard refreshes work. With no build present it returns a plain-text 404 pointing at the Vite dev server / `release.sh` instead of crashing. `priv/static` is gitignored — it's a build artifact copied from `frontend/dist`. |
+| 4 | Placeholder vertical slice | `group_chats` done end-to-end rather than an empty route: migration, `Chats` context, `GroupChat` schema, `GET`/`POST /api/group_chats` with changeset-error fallback — so both the REST surface and the sync shape had something real to serve during verification. |
+| 5 | Dev environment | `backend/docker-compose.yml` runs `postgres:17-alpine` with `command: postgres -c wal_level=logical` (Electric consumes logical replication) + healthcheck. Two processes in dev: `mix phx.server` on :4000 (API only), Vite on :5173 with HMR proxying `/api`. Tests run with `config :phoenix_sync, mode: :disabled` so no replication connection boots in the test env. |
+| 6 | ⑂ Installer fork | The supported `mix igniter.install phoenix_sync --sync-mode embedded` path crashed (installer bug under Elixir 1.20, `Phoenix.Sync.MixProject` undefined) after adding only the dep — the rest (config, `Phoenix.Sync.plug_opts()` endpoint child arg, electric dep) was wired manually per the docs. |
+| 7 | ⑂ The big fork: silent protocol impl loss | Every `sync` route 500'd with `Protocol.UndefinedError`. Root cause: phoenix_sync guards its `PlugApi` impl for `Electric.Shapes.Api` with `Code.ensure_loaded?(Phoenix.Sync.Electric.ApiAdapter)` — a *sibling module of the same package* that Elixir 1.20's parallel compiler compiles later — so the impl is **silently skipped at compile time**. Reproduced in dev and in the prod/Docker build; guard unchanged on upstream `main`. Fix: `lib/hotel_chat/phoenix_sync_plug_api_impl.ex` vendors the impl behind `unless Code.ensure_loaded?(<impl module>)`, so it compiles only while upstream's is missing and self-retires once fixed. (Upstream's copy also pattern-matches `%ApiAdapter{}` in a clause that can never match in that impl — corrected in the vendored copy.) Worth an upstream issue/PR. |
+| 8 | Release workflow | Top-level `release.sh`: frontend build → copy `dist` into `priv/static` → `MIX_ENV=prod mix release` (frontend ships inside the release) → `docker build`. The image is a **self-contained multi-stage build** (pnpm frontend stage → hexpm/elixir release stage → 58MB alpine runtime, `PHX_SERVER=true`, non-root) rather than copying the host release in — a musl/host-built release isn't portable, and the image must be reproducible without host state. `SKIP_DOCKER=1` yields just the native release. |
+| 9 | ⑂ Docker build forks | Three iterations to green: `npm ci` → **pnpm** (the frontend is a pnpm project, no `package-lock.json`); Hex fetch timeouts in-container → `HEX_HTTP_CONCURRENCY=2 HEX_HTTP_TIMEOUT=120`; and the frontend's `../../../brand/sona-brand.css` import → the image build keeps `frontend/` and `brand/` as siblings (build context is `hotel_chat/`, `docker build -f backend/Dockerfile .`). |
+
+## 3. State of the backend so far
+
+Everything below verified by hand against the running system — in dev **and** against the built production container (`docker run` on the compose network):
+
+- `POST`/`GET /api/group_chats` — JSON CRUD slice working.
+- `GET /api/sync/group_chats?offset=-1` — real Electric shape protocol response: `electric-handle`/`electric-schema`/`electric-offset` headers plus the shape log with the inserted row; replication slot, publication and lock all acquired by the embedded instance.
+- `GET /chats/123` (deep link) — 200 `text/html` serving the SPA's `index.html`; hashed `/assets/*.js` served by `Plug.Static` (gzipped via `mix phx.digest` in the image).
+- `mix test` green; Electric stays out of the test env.
+- Caveat observed live: two embedded Electric instances (host dev server + container) pointed at the same database contend for the same replication slot — the second one times out on lock acquisition. One Electric per database at a time.
+
+### Request routing (as scaffolded)
+
+```
+                       browser
+                          │
+            dev: Vite :5173 (HMR) ──proxy /api──▶ Phoenix :4000
+            prod: Phoenix :4000 only
+                          │
+┌─ HotelChatWeb.Endpoint ─┼──────────────────────────────────────┐
+│ Plug.Static (priv/static ⇐ frontend/dist)                      │
+│   /assets/*, /index.html, favicon…      ── real files end here │
+│ Router                                                         │
+│   /api/group_chats        → GroupChatController (Chats ctx)    │
+│   /api/sync/group_chats   → sync macro → embedded Electric ────┼──▶ shape log
+│   /*path (catch-all)      → PageController → index.html (SPA)  │
+└────────────────────────────────────────────────────────────────┘
+          │                                   ▲
+   HotelChat.Repo ──── Postgres 17 (wal_level=logical)
+                              └── logical replication ┘
+```
+
+## 4. Open items
+
+- **Upstream phoenix_sync fixes** (issue/PR material): the `ensure_loaded?` compile-order race (#7 above), the unreachable `send_response` clause, and the Igniter installer crash on Elixir 1.20.
+- **Electric version**: pinned to 1.1.10 by phoenix_sync — revisit when phoenix_sync supports current Electric (1.7.x).
+- **Migrations in the release**: no `Release.migrate` module / `bin/migrate` entrypoint yet — the container assumes a migrated database.
+- **Auth on sync + API routes**: the `:api` pipeline is the hook point; shapes go through the router precisely so existing plug auth can gate them — nothing is gated yet.
+- **Electric storage in prod**: the embedded instance persists shape logs under the container's working dir (ephemeral) — fine for a pilot, wants a volume or explicit `storage_dir` before real use.
+- **Real schema**: `group_chats` is a name-only placeholder; the session-1 entity model (Company/Location/Member/Conversation/Message…) is still to be translated into migrations and shapes.
+- **Frontend hookup**: TanStack DB collections pointed at `/api/sync/*` shapes — the seam left ready in session 2.
+
+**Next session:** wire the frontend to the backend — real schema, shapes for the mockup screens' data, and TanStack DB collections replacing `mock/data.ts`.

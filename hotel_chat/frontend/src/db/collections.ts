@@ -39,6 +39,7 @@ import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import type { ElectricCollectionConfig } from '@tanstack/electric-db-collection'
 import type { Row } from '@electric-sql/client'
 import { postJson, txidOf } from './api'
+import { session } from './session'
 import type {
   Conversation,
   ConversationMember,
@@ -54,6 +55,15 @@ import type {
 } from './schema'
 
 const timestampParser = (value: string) => value.replace(' ', 'T') + 'Z'
+
+// TEMPORARY(auth): the mock-session member slug rides on every shape
+// request; the sync proxy consumes it for $me/$company scoping and never
+// forwards it to Electric (see db/session.ts).
+const shapeUrl = (shape: string) => {
+  const url = new URL(`/api/sync/${shape}`, window.location.origin)
+  url.searchParams.set('as', session.asMember)
+  return url.toString()
+}
 
 const shapeCollection = <T extends Row<unknown>>(
   shape: string,
@@ -73,7 +83,7 @@ const shapeCollection = <T extends Row<unknown>>(
         // URL(url)` with no base, which throws (as a swallowed rejected
         // promise — no visible error, just zero requests) on a relative
         // path, unlike fetch() itself which resolves relative URLs fine.
-        url: new URL(`/api/sync/${shape}`, window.location.origin).toString(),
+        url: shapeUrl(shape),
         parser: withTimestamps ? { timestamp: timestampParser } : undefined,
       },
       getKey,

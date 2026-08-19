@@ -8,10 +8,8 @@ defmodule HotelChatWeb.MessageController do
 
   @doc "POST /api/conversations/:conversation_id/messages"
   def create(conn, %{"conversation_id" => conversation_id} = params) do
-    # TODO(auth): swap for the real authenticated session once auth lands.
-    session = MockSession.get()
-
-    with {:ok, %{record: message, txid: txid}} <-
+    with {:ok, session} <- MockSession.from_conn(conn),
+         {:ok, %{record: message, txid: txid}} <-
            Conversations.create_message(session, conversation_id, params) do
       conn
       |> put_status(:created)
@@ -21,10 +19,8 @@ defmodule HotelChatWeb.MessageController do
 
   @doc "POST /api/messages/:message_id/replies"
   def reply(conn, %{"message_id" => message_id} = params) do
-    # TODO(auth): swap for the real authenticated session once auth lands.
-    session = MockSession.get()
-
-    with {:ok, %{record: message, txid: txid}} <-
+    with {:ok, session} <- MockSession.from_conn(conn),
+         {:ok, %{record: message, txid: txid}} <-
            Conversations.create_reply(session, message_id, params) do
       conn
       |> put_status(:created)

@@ -11,6 +11,27 @@ defmodule HotelChatWeb.MessageControllerTest do
   end
 
   describe "POST /api/conversations/:conversation_id/messages" do
+    test "?as= switches the acting member for the write", %{conn: conn, company: company} do
+      daniel =
+        Repo.insert!(%HotelChat.Identity.Member{
+          id: HotelChat.Seeds.Id.uuid("member:daniel"),
+          company_id: company.id,
+          name: "Daniel Okafor",
+          active: true
+        })
+
+      conversation = conversation_fixture(company)
+      membership_fixture(conversation, daniel)
+
+      conn =
+        post(conn, ~p"/api/conversations/#{conversation.id}/messages?as=daniel", %{
+          "body" => "Evening handover in 10."
+        })
+
+      assert %{"data" => %{"id" => id}} = json_response(conn, 201)
+      assert Repo.get!(Message, id).author_id == daniel.id
+    end
+
     test "creates a message and returns its txid", %{conn: conn, company: company, me: me} do
       conversation = conversation_fixture(company)
       membership_fixture(conversation, me)

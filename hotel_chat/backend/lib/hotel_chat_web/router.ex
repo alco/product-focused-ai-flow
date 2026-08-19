@@ -18,6 +18,7 @@ defmodule HotelChatWeb.Router do
     # Messaging write path. Each endpoint captures the Postgres txid of its
     # write and returns it, so the client's TanStack DB collections can hold
     # optimistic state until the write syncs back through Electric.
+    get "/session", SessionController, :show
     post "/conversations", ConversationController, :create
     post "/conversations/:conversation_id/messages", MessageController, :create
     post "/conversations/:conversation_id/announcements", AnnouncementController, :create

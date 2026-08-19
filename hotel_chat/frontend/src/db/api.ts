@@ -8,6 +8,8 @@
 // write arrive through the sync stream — at which point the optimistic
 // overlay is dropped exactly in sync with the confirmed row appearing.
 
+import { session } from './session'
+
 export interface WriteResult {
   /** null when the request wrote nothing (e.g. the DM already existed). */
   txid: number | null
@@ -37,7 +39,11 @@ export async function postJson(
   path: string,
   body: Record<string, unknown>,
 ): Promise<WriteResult> {
-  const res = await fetch(path, {
+  const url = new URL(path, window.location.origin)
+  // TEMPORARY(auth): the mock-session member rides on every write —
+  // see db/session.ts.
+  url.searchParams.set('as', session.asMember)
+  const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

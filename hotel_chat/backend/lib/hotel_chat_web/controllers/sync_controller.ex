@@ -24,17 +24,23 @@ defmodule HotelChatWeb.SyncController do
 
   def show(conn, %{"shape" => shape_name} = params) do
     # TODO(auth): swap for the real authenticated session once auth lands;
-    # shape definitions use it for $me/$company scoping.
-    session = MockSession.get()
+    # shape definitions use it for $me/$company scoping. The `as` param is
+    # consumed here (via MockSession) and never forwarded to Electric.
+    with {:ok, session} <- MockSession.from_conn(conn) do
+      case Shapes.define(shape_name, session) do
+        {:ok, shape} ->
+          proxy(conn, shape, params)
 
-    case Shapes.define(shape_name, session) do
-      {:ok, shape} ->
-        proxy(conn, shape, params)
-
-      :error ->
+        :error ->
+          conn
+          |> put_status(:not_found)
+          |> json(%{error: "unknown shape #{inspect(shape_name)}"})
+      end
+    else
+      {:error, :unknown_member} ->
         conn
         |> put_status(:not_found)
-        |> json(%{error: "unknown shape #{inspect(shape_name)}"})
+        |> json(%{error: "unknown member"})
     end
   end
 

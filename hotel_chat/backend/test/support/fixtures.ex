@@ -12,11 +12,14 @@ defmodule HotelChat.Fixtures do
   alias HotelChat.Conversations.{Conversation, ConversationMember, Message}
   alias HotelChat.Identity.Member
   alias HotelChat.Repo
-  alias HotelChat.Sync.MockSession
+  alias HotelChat.Seeds.Id
 
   @doc "Seeds the mock-session company + member. Returns %{session, company, me}."
   def session_fixture do
-    session = MockSession.get()
+    session = %{
+      member_id: Id.uuid("member:priya"),
+      company_id: Id.uuid("company:harbourlight")
+    }
     company = Repo.insert!(%Company{id: session.company_id, name: "Harbourlight Hotels"})
 
     me =

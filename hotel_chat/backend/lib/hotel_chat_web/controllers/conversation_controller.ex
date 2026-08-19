@@ -8,9 +8,12 @@ defmodule HotelChatWeb.ConversationController do
 
   @doc "POST /api/conversations"
   def create(conn, params) do
-    # TODO(auth): swap for the real authenticated session once auth lands.
-    session = MockSession.get()
+    with {:ok, session} <- MockSession.from_conn(conn) do
+      create_conversation(conn, session, params)
+    end
+  end
 
+  defp create_conversation(conn, session, params) do
     case Conversations.create_conversation(session, params) do
       {:ok, %{record: conversation, txid: txid}} ->
         conn
@@ -30,10 +33,8 @@ defmodule HotelChatWeb.ConversationController do
 
   @doc "POST /api/conversations/:conversation_id/read"
   def mark_read(conn, %{"conversation_id" => conversation_id}) do
-    # TODO(auth): swap for the real authenticated session once auth lands.
-    session = MockSession.get()
-
-    with {:ok, %{record: membership, txid: txid}} <-
+    with {:ok, session} <- MockSession.from_conn(conn),
+         {:ok, %{record: membership, txid: txid}} <-
            Conversations.mark_read(session, conversation_id) do
       json(conn, %{
         txid: txid,

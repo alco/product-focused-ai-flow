@@ -8,10 +8,8 @@ defmodule HotelChatWeb.AnnouncementController do
 
   @doc "POST /api/conversations/:conversation_id/announcements"
   def create(conn, %{"conversation_id" => conversation_id} = params) do
-    # TODO(auth): swap for the real authenticated session once auth lands.
-    session = MockSession.get()
-
-    with {:ok, %{record: message, txid: txid}} <-
+    with {:ok, session} <- MockSession.from_conn(conn),
+         {:ok, %{record: message, txid: txid}} <-
            Conversations.create_announcement(session, conversation_id, params) do
       conn
       |> put_status(:created)

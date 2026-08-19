@@ -27,6 +27,14 @@ defmodule HotelChatWeb.FallbackController do
     |> render(:"403")
   end
 
+  # TEMPORARY(auth): the ?as=<slug> mock-session switch named a member that
+  # doesn't exist (or is inactive) — see HotelChat.Sync.MockSession.
+  def call(conn, {:error, :unknown_member}) do
+    conn
+    |> put_status(:not_found)
+    |> json(%{errors: %{detail: "unknown member"}})
+  end
+
   def call(conn, {:error, :not_a_channel}) do
     conn
     |> put_status(:unprocessable_entity)

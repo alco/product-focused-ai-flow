@@ -173,8 +173,23 @@ defmodule HotelChat.Conversations do
     case membership do
       %ConversationMember{} = membership ->
         transaction_with_txid(fn ->
+          # "Read" means everything that exists now. Taking the newer of
+          # utc_now and the newest message keeps the cursor ahead of the
+          # transcript even under clock skew or oddly-dated rows — a cursor
+          # that can't pass the newest message would leave the conversation
+          # permanently unread (and the client sentinel retrying).
+          newest =
+            Repo.one(
+              from m in Message,
+                where: m.conversation_id == ^membership.conversation_id,
+                select: max(m.inserted_at)
+            )
+
+          cursor =
+            [DateTime.utc_now() | List.wrap(newest)] |> Enum.max(DateTime)
+
           membership
-          |> Ecto.Changeset.change(last_read_at: DateTime.utc_now())
+          |> Ecto.Changeset.change(last_read_at: cursor)
           |> Repo.update()
         end)
 

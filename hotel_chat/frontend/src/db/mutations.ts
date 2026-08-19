@@ -81,10 +81,18 @@ export function addReaction(messageId: string, emoji: string): string {
   return id
 }
 
-/** 6. Advance my read cursor — call when the transcript is read to the bottom. */
-export function markConversationRead(membership: ConversationMember): void {
+/**
+ * 6. Advance my read cursor — call when the transcript is read to the bottom.
+ *
+ * `upTo` is the newest rendered message's own inserted_at, not the client
+ * clock: the cursor then clears the transcript by construction, immune to
+ * clock skew (a client-now cursor behind the newest message would leave the
+ * conversation unread forever and the sentinel retrying). The server stores
+ * the newer of its own now and the newest message.
+ */
+export function markConversationRead(membership: ConversationMember, upTo: string): void {
   membershipsCollection.update(membership.id, (draft) => {
-    draft.last_read_at = nowIso()
+    draft.last_read_at = upTo
   })
 }
 

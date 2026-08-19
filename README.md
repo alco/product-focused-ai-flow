@@ -18,6 +18,9 @@ All artifacts are committed to this repo as they're produced, so the full decisi
 
 A mobile-first PWA giving a hotel's on-site staff WhatsApp-grade internal chat plus official announcement channels, organized by the org chart and integrated (eventually) with the surrounding software ecosystem.
 
+![desktop](Desktop - Group Chat View.png)
+![mobile](Mobile - Create Group Chat.png)
+
 Project outline:
 
 | Path                   | What it is                                                                                                                                                                                                           |

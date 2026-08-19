@@ -54,6 +54,7 @@ AI briefs and artifacts, in chronological order:
 | `agent_sessions/session-6-summary.md`                               | Session 6 summary: migrations/schemas/seeds, all 10 shapes implemented, wired to Electric          |
 | `../7-feature-buildout.md`                                          | Brief for session 7: messaging write endpoints + optimistic mutations, desktop/mobile UI fixes     |
 | `agent_sessions/session-7-summary.md`                               | Session 7 summary: parallel-worktree build of the write path + UI fixes, merge, e2e verification   |
+| `../8-ui-and-backend-cleanups-ai-brief.md`                          | Retroactive brief for session 8: DB-enforced DM pair (dm_key removed), group-create affordance fix |
 
 **Roadmap:**
 

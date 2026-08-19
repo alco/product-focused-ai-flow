@@ -25,10 +25,20 @@ message_id = fn slug -> id.("message:#{slug}") end
 
 now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
 
+# The transcripts hardcode day-0 wall-clock times up to ~noon UTC. Seeding
+# before that hour would date those messages in the future — unread counts
+# would then never clear (the read cursor can't get past them). Anchor the
+# whole timeline one day back in that case; every `at` offset shifts
+# together, so ordering is preserved.
 today_start =
   DateTime.utc_now()
   |> DateTime.to_date()
   |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+
+today_start =
+  if DateTime.compare(DateTime.add(today_start, 12 * 3600, :second), DateTime.utc_now()) == :gt,
+    do: DateTime.add(today_start, -86_400, :second),
+    else: today_start
 
 # DateTime.new!/DateTime.add don't raise their microsecond precision on their
 # own; utc_datetime_usec requires precision 6 explicitly, hence the |micro|.

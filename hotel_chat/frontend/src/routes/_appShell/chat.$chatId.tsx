@@ -15,6 +15,7 @@ import { Avatar } from '../../components/Avatar'
 import { Composer } from '../../components/chat/Composer'
 import type { ReplyTarget } from '../../components/chat/Composer'
 import { MarkReadSentinel } from '../../components/chat/MarkReadSentinel'
+import { ScrollToLatest } from '../../components/chat/ScrollToLatest'
 import { ConversationTopBar } from '../../components/chat/ConversationTopBar'
 import { GroupCircles } from '../../components/GroupCircles'
 import { MessageList } from '../../components/chat/MessageList'
@@ -208,7 +209,12 @@ function ConversationScreen({
       onCancelReply={() => setReplyTo(undefined)}
     />
   )
-  const sentinel = <MarkReadSentinel conversationId={conversation.id} />
+  const sentinel = (
+    <>
+      <MarkReadSentinel conversationId={conversation.id} />
+      <ScrollToLatest key={conversation.id} count={data.messages.length} />
+    </>
+  )
 
   if (!isDesktop) {
     return (

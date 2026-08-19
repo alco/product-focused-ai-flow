@@ -97,14 +97,25 @@ export function markConversationRead(membership: ConversationMember): void {
  * Postgres transaction, so the single returned txid covers everything —
  * awaiting it on the conversations collection drops the optimistic row just
  * as the confirmed conversation (and its roster/membership rows) sync in.
+ *
+ * For DMs the server enforces one-DM-per-pair (partial unique index on the
+ * canonical member pair). If this create loses that race, it responds with
+ * the existing conversation and a null txid — `canonicalId` resolves to the
+ * id the caller should navigate to, which then differs from the optimistic
+ * local `id`.
  */
 export function createConversation(opts: {
   kind: 'dm' | 'group'
   name?: string
   emoji?: string
   memberIds: string[]
-}): { id: string; persisted: Promise<unknown> } {
+}): { id: string; canonicalId: Promise<string>; persisted: Promise<unknown> } {
   const id = uuid()
+
+  let resolveCanonical!: (id: string) => void
+  const canonicalId = new Promise<string>((resolve) => {
+    resolveCanonical = resolve
+  })
 
   const tx = createTransaction({
     mutationFn: async () => {
@@ -115,9 +126,13 @@ export function createConversation(opts: {
         emoji: opts.emoji ?? null,
         member_ids: opts.memberIds,
       })
-      await conversationsCollection.utils.awaitTxId(res.txid)
+      resolveCanonical(res.data.id)
+      if (res.txid != null) await conversationsCollection.utils.awaitTxId(res.txid)
     },
   })
+
+  const [dmA, dmB] =
+    opts.kind === 'dm' ? [session.memberId, opts.memberIds[0]].sort() : [null, null]
 
   tx.mutate(() => {
     conversationsCollection.insert({
@@ -127,12 +142,13 @@ export function createConversation(opts: {
       name: opts.kind === 'group' ? (opts.name ?? null) : null,
       emoji: opts.emoji ?? null,
       location_id: null,
-      dm_key: null,
+      dm_member_a: dmA,
+      dm_member_b: dmB,
       created_by: session.memberId,
       archived_at: null,
       inserted_at: nowIso(),
     })
   })
 
-  return { id, persisted: tx.isPersisted.promise }
+  return { id, canonicalId, persisted: tx.isPersisted.promise }
 }

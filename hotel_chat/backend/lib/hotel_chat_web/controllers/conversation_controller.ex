@@ -11,11 +11,20 @@ defmodule HotelChatWeb.ConversationController do
     # TODO(auth): swap for the real authenticated session once auth lands.
     session = MockSession.get()
 
-    with {:ok, %{record: conversation, txid: txid}} <-
-           Conversations.create_conversation(session, params) do
-      conn
-      |> put_status(:created)
-      |> json(%{txid: txid, data: %{id: conversation.id}})
+    case Conversations.create_conversation(session, params) do
+      {:ok, %{record: conversation, txid: txid}} ->
+        conn
+        |> put_status(:created)
+        |> json(%{txid: txid, data: %{id: conversation.id}})
+
+      # DM already exists for this pair (client dedupe missed or lost the
+      # race) — nothing was written, so there is no txid; the client should
+      # navigate to the returned conversation instead.
+      {:existing, conversation} ->
+        json(conn, %{txid: nil, data: %{id: conversation.id}})
+
+      error ->
+        error
     end
   end
 

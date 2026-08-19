@@ -74,7 +74,7 @@ Every shape's snapshot/subquery evaluation, against the indexes declared in the 
 
 Conclusion: **no missing indexes — and no shape-only indexes either.** Every index in the data-model doc is justified by a key, an FK, or a write-path lookup; the shapes ride along for free. (Two earlier drafts carried three shape-only indexes and five denormalized columns; subqueries + client joins + subset snapshots eliminated all of them.)
 
-Write-path indexes are separate and already covered: `dm_key` partial unique (DM creation race), `(company_id, phone)` partials/lookups (login, invites), FK cascades.
+Write-path indexes are separate and already covered: the DM-pair partial unique (DM creation race), `(company_id, phone)` partials/lookups (login, invites), FK cascades.
 
 ## Runtime requirements ✔ (resolved)
 

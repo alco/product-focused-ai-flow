@@ -50,7 +50,9 @@ export type Conversation = {
   name: string | null
   emoji: string | null
   location_id: string | null
-  dm_key: string | null
+  /** DM member pair, canonically ordered (a < b); null on non-DMs. */
+  dm_member_a: string | null
+  dm_member_b: string | null
   created_by: string | null
   archived_at: string | null
   inserted_at: string

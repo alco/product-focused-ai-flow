@@ -58,7 +58,8 @@ defmodule HotelChat.Sync.Shapes do
        table: "conversations",
        where: "id IN #{@my_convs}",
        params: %{"1" => member_id},
-       columns: ~w(id company_id kind name emoji location_id dm_key created_by archived_at inserted_at)
+       columns:
+         ~w(id company_id kind name emoji location_id dm_member_a dm_member_b created_by archived_at inserted_at)
      }}
   end
 

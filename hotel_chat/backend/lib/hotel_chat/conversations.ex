@@ -107,17 +107,41 @@ defmodule HotelChat.Conversations do
   @doc """
   Creates a dm/group conversation with the acting member and `member_ids`
   enrolled, all in one transaction (one txid covers the conversation and
-  membership rows). DMs get the canonical race-proof `dm_key`.
+  membership rows). DMs carry the canonical member pair (`dm_member_a` <
+  `dm_member_b`), whose partial unique index makes one-DM-per-pair race-proof;
+  when the insert loses that race (or the client's local dedupe missed), the
+  existing conversation is returned as `{:existing, conversation}` instead of
+  an error.
   """
   def create_conversation(session, %{"kind" => "dm"} = attrs) do
     with {:ok, [other_id]} <- validate_members(session, attrs, exactly: 1) do
-      dm_key = Enum.join(Enum.sort([session.member_id, other_id]), ":")
+      [a, b] = Enum.sort([session.member_id, other_id])
 
-      insert_conversation(
-        session,
-        Map.take(attrs, ["id"]) |> Map.merge(%{"kind" => "dm", "dm_key" => dm_key}),
-        [other_id]
-      )
+      result =
+        insert_conversation(
+          session,
+          Map.take(attrs, ["id"])
+          |> Map.merge(%{"kind" => "dm", "dm_member_a" => a, "dm_member_b" => b}),
+          [other_id]
+        )
+
+      case result do
+        {:error, %Ecto.Changeset{} = changeset} = error ->
+          if dm_pair_conflict?(changeset) do
+            {:existing,
+             Repo.get_by!(Conversation,
+               company_id: session.company_id,
+               kind: "dm",
+               dm_member_a: a,
+               dm_member_b: b
+             )}
+          else
+            error
+          end
+
+        other ->
+          other
+      end
     end
   end
 
@@ -206,6 +230,14 @@ defmodule HotelChat.Conversations do
         end)
       end
     end)
+  end
+
+  # The pair's partial unique index rejected the insert — the DM already exists.
+  defp dm_pair_conflict?(%Ecto.Changeset{errors: errors}) do
+    case Keyword.get(errors, :dm_member_a) do
+      {_msg, meta} -> meta[:constraint] == :unique
+      _ -> false
+    end
   end
 
   # `member_ids` must all be active members of the acting member's company.

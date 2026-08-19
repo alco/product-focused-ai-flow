@@ -38,7 +38,7 @@ import { createCollection } from '@tanstack/react-db'
 import { electricCollectionOptions } from '@tanstack/electric-db-collection'
 import type { ElectricCollectionConfig } from '@tanstack/electric-db-collection'
 import type { Row } from '@electric-sql/client'
-import { postJson } from './api'
+import { postJson, txidOf } from './api'
 import type {
   Conversation,
   ConversationMember,
@@ -99,7 +99,7 @@ export const membershipsCollection = shapeCollection<ConversationMember>(
             `/api/conversations/${m.modified.conversation_id}/read`,
             {},
           )
-          return res.txid
+          return txidOf(res)
         }),
       )
       return { txid: txids }
@@ -168,7 +168,7 @@ export const messagesCollection = shapeCollection<Message>('messages', (r) => r.
                   id: row.id,
                   body: row.body,
                 })
-        return res.txid
+        return txidOf(res)
       }),
     )
     return { txid: txids }
@@ -188,7 +188,7 @@ export const reactionsCollection = shapeCollection<MessageReaction>(
             id: m.modified.id,
             emoji: m.modified.emoji,
           })
-          return res.txid
+          return txidOf(res)
         }),
       )
       return { txid: txids }

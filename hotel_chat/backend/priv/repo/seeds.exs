@@ -120,12 +120,10 @@ Repo.insert_all(
 
 # --- Conversations ---------------------------------------------------------------
 
-# Canonical DM-uniqueness key: sorted *member ids* (data-model.md,
-# `least(member_a, member_b) ‖ ':' ‖ greatest(...)`) — the write path
-# (HotelChat.Conversations.create_conversation) and the client's DM-dedupe
-# lookup both compute it from ids, so seeds must too or seeded DMs escape
-# the one-DM-per-pair constraint.
-dm_key = fn a, b -> Enum.sort([member_id.(a), member_id.(b)]) |> Enum.join(":") end
+# DM member pair, canonically ordered — the DB enforces validity (CHECKs +
+# composite FKs to conversation_members) and one-DM-per-pair (partial unique
+# index); see the ReplaceDmKeyWithMemberPair migration.
+dm_pair = fn a, b -> Enum.sort([member_id.(a), member_id.(b)]) end
 
 group_conversations = [
   %{slug: "company-channel", kind: "company_channel", name: "Harbourlight Hotels"},
@@ -153,7 +151,8 @@ group_conversations = [
 
 dm_conversations =
   Enum.map(~w(daniel amira yuki marco hannah stefan grace liam), fn other ->
-    %{slug: "dm-#{other}", kind: "dm", name: nil, dm_key: dm_key.("priya", other)}
+    [a, b] = dm_pair.("priya", other)
+    %{slug: "dm-#{other}", kind: "dm", name: nil, dm_member_a: a, dm_member_b: b}
   end)
 
 conversations = group_conversations ++ dm_conversations
@@ -168,7 +167,8 @@ Repo.insert_all(
       name: Map.get(c, :name),
       emoji: Map.get(c, :emoji),
       location_id: Map.get(c, :location_id),
-      dm_key: Map.get(c, :dm_key),
+      dm_member_a: Map.get(c, :dm_member_a),
+      dm_member_b: Map.get(c, :dm_member_b),
       created_by: Map.get(c, :created_by),
       archived_at: nil,
       inserted_at: at.(45, "09:00"),

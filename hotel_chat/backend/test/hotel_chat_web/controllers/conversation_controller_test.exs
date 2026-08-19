@@ -50,7 +50,7 @@ defmodule HotelChatWeb.ConversationControllerTest do
       assert Enum.sort(member_ids) == Enum.sort([me.id, a.id, b.id])
     end
 
-    test "creates a dm with a canonical dm_key", %{conn: conn, company: company, me: me} do
+    test "creates a dm with the canonical member pair", %{conn: conn, company: company, me: me} do
       other = member_fixture(company)
 
       conn =
@@ -61,19 +61,24 @@ defmodule HotelChatWeb.ConversationControllerTest do
       conversation = Repo.get!(Conversation, id)
       assert conversation.kind == "dm"
       assert conversation.name == nil
-      assert conversation.dm_key == Enum.join(Enum.sort([me.id, other.id]), ":")
+      assert [conversation.dm_member_a, conversation.dm_member_b] == Enum.sort([me.id, other.id])
     end
 
-    test "rejects a second dm for the same pair", %{conn: conn, company: company} do
+    test "returns the existing dm for a duplicate pair instead of creating one", %{
+      conn: conn,
+      company: company
+    } do
       other = member_fixture(company)
 
-      assert post(conn, ~p"/api/conversations", %{"kind" => "dm", "member_ids" => [other.id]})
-             |> json_response(201)
+      assert %{"data" => %{"id" => id}} =
+               post(conn, ~p"/api/conversations", %{"kind" => "dm", "member_ids" => [other.id]})
+               |> json_response(201)
 
       conn =
         post(conn, ~p"/api/conversations", %{"kind" => "dm", "member_ids" => [other.id]})
 
-      assert %{"errors" => _} = json_response(conn, 422)
+      assert %{"txid" => nil, "data" => %{"id" => ^id}} = json_response(conn, 200)
+      assert Repo.aggregate(from(c in Conversation, where: c.kind == "dm"), :count) == 1
     end
 
     test "rejects a group without a name", %{conn: conn, company: company} do

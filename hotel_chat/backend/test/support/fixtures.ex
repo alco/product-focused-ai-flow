@@ -47,8 +47,7 @@ defmodule HotelChat.Fixtures do
     Repo.insert!(%Conversation{
       company_id: company.id,
       kind: Map.get(attrs, :kind, "group"),
-      name: Map.get(attrs, :name, "Test group"),
-      dm_key: Map.get(attrs, :dm_key)
+      name: Map.get(attrs, :name, "Test group")
     })
   end
 

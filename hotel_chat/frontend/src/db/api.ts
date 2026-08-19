@@ -9,8 +9,18 @@
 // overlay is dropped exactly in sync with the confirmed row appearing.
 
 export interface WriteResult {
-  txid: number
+  /** null when the request wrote nothing (e.g. the DM already existed). */
+  txid: number | null
   data: { id: string } & Record<string, unknown>
+}
+
+/**
+ * Unwraps the txid from an endpoint that always writes — only the DM-dedupe
+ * response of POST /api/conversations legitimately carries a null txid.
+ */
+export function txidOf(res: WriteResult): number {
+  if (res.txid === null) throw new Error('expected a txid on this write response')
+  return res.txid
 }
 
 export class ApiError extends Error {

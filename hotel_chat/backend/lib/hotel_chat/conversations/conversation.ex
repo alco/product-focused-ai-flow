@@ -22,7 +22,10 @@ defmodule HotelChat.Conversations.Conversation do
     field :name, :string
     field :emoji, :string
     belongs_to :location, Location
-    field :dm_key, :string
+    # DM member pair, canonically ordered (dm_member_a < dm_member_b);
+    # present iff kind == "dm" — see the ReplaceDmKeyWithMemberPair migration.
+    field :dm_member_a, :binary_id
+    field :dm_member_b, :binary_id
     belongs_to :creator, Member, foreign_key: :created_by
     field :archived_at, :utc_datetime_usec
 
@@ -38,13 +41,14 @@ defmodule HotelChat.Conversations.Conversation do
       :name,
       :emoji,
       :location_id,
-      :dm_key,
+      :dm_member_a,
+      :dm_member_b,
       :created_by,
       :archived_at
     ])
     |> validate_required([:company_id, :kind])
     |> validate_inclusion(:kind, @kinds)
-    |> unique_constraint([:company_id, :dm_key], name: :conversations_company_id_dm_key_index)
+    |> unique_constraint([:dm_member_a, :dm_member_b], name: :conversations_dm_pair_index)
     |> foreign_key_constraint(:company_id)
     |> foreign_key_constraint(:location_id)
     |> foreign_key_constraint(:created_by)

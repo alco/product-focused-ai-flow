@@ -1,7 +1,7 @@
 // frontend/src/routes/new-chat.tsx
 // Member picker over the directory collection. Creation is an optimistic
 // API write (db/mutations createConversation): one selected person makes a
-// DM (reusing an existing one via its canonical dm_key when present),
+// DM (reusing an existing one via its canonical member pair when present),
 // several make a group.
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
@@ -43,16 +43,27 @@ function NewChatScreen() {
     if (!canCreate) return
     if (selectedIds.length === 1) {
       // One DM per pair: reuse the existing conversation via its canonical
-      // dm_key (sorted pair of member ids) instead of asking the server to
-      // create a duplicate it would reject anyway.
-      const dmKey = [session.memberId, selectedIds[0]].sort().join(':')
-      const existing = conversations.find((c) => c.dm_key === dmKey)
+      // member pair instead of asking the server to create a duplicate.
+      const [a, b] = [session.memberId, selectedIds[0]].sort()
+      const existing = conversations.find(
+        (c) => c.dm_member_a === a && c.dm_member_b === b,
+      )
       if (existing) {
         navigate({ to: '/chat/$chatId', params: { chatId: existing.id } })
         return
       }
-      const { id } = createConversation({ kind: 'dm', memberIds: selectedIds })
+      const { id, canonicalId } = createConversation({
+        kind: 'dm',
+        memberIds: selectedIds,
+      })
       navigate({ to: '/chat/$chatId', params: { chatId: id } })
+      // If the server reports the DM already existed (this dedupe raced or
+      // missed), hop over to the real conversation.
+      void canonicalId.then((serverId) => {
+        if (serverId !== id) {
+          navigate({ to: '/chat/$chatId', params: { chatId: serverId } })
+        }
+      })
     } else {
       const { id } = createConversation({
         kind: 'group',

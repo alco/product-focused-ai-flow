@@ -1,7 +1,7 @@
 /* Desktop shell — /desktop and /desktop-empty.
    Three columns: sidebar (white) · conversation (stone-50) · members (white).
    Brand tokens from brand/sona-brand.css; list rows reuse chat-list.css,
-   search field reuses session2-screens.css, chrome reuses app.css. */
+   chrome reuses app.css. */
 
 .desktop-shell {
   background: var(--background);
@@ -74,27 +74,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-/* Ghost new-chat button */
-.sidebar-new {
-  align-items: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  display: inline-flex;
-  flex-shrink: 0;
-  font-size: 1rem;
-  height: 34px;
-  justify-content: center;
-  line-height: 1;
-  padding: 0;
-  width: 34px;
-}
-
-.sidebar-new:hover {
-  background: var(--muted);
 }
 
 .sidebar-scroll {

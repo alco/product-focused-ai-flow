@@ -1,7 +1,7 @@
-// Desktop sidebar: compact identity header, static search, then the same
-// stacked chat sections as the mobile chat list — official lime band,
-// favorites, all chats. Identity comes from the directory/locations
-// collections; the company name arrives via session bootstrap.
+// Desktop sidebar: compact identity header, then the same stacked chat
+// sections as the mobile chat list — official lime band, favorites, all
+// chats. Identity comes from the directory/locations collections; the
+// company name arrives via session bootstrap.
 
 import { Link } from '@tanstack/react-router'
 import { Avatar } from '../Avatar'
@@ -27,17 +27,7 @@ export function Sidebar({ activeChatId }: { activeChatId?: string }) {
             <div className="sidebar-subtitle">{session.companyName}</div>
           </div>
         </Link>
-        <button type="button" className="sidebar-new" aria-label="New chat">
-          ✏️
-        </button>
       </header>
-
-      <div className="search-field">
-        <span className="search-icon" aria-hidden>
-          🔍
-        </span>
-        Search
-      </div>
 
       <div className="sidebar-scroll">
         <ChatSections activeChatId={activeChatId} />

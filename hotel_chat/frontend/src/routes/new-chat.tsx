@@ -5,7 +5,7 @@
 // several make a group.
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useLiveQuery } from '@tanstack/react-db'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Avatar } from '../components/Avatar'
 import { conversationsCollection, directoryCollection } from '../db/collections'
 import { createConversation } from '../db/mutations'
@@ -24,6 +24,8 @@ function NewChatScreen() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [groupName, setGroupName] = useState('')
+  const [nameMissing, setNameMissing] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
 
   const selectedPeople = members.filter((m) => selectedIds.includes(m.id))
   const candidates = members
@@ -40,7 +42,14 @@ function NewChatScreen() {
     selectedIds.length === 1 || (isGroup && groupName.trim().length > 0)
 
   const create = () => {
-    if (!canCreate) return
+    if (selectedIds.length === 0) return
+    if (isGroup && groupName.trim().length === 0) {
+      // The button looks disabled (aria-disabled) but still gets this click:
+      // point at what's blocking creation instead of silently ignoring it.
+      setNameMissing(true)
+      nameInputRef.current?.focus()
+      return
+    }
     if (selectedIds.length === 1) {
       // One DM per pair: reuse the existing conversation via its canonical
       // member pair instead of asking the server to create a duplicate.
@@ -115,12 +124,17 @@ function NewChatScreen() {
             {isGroup && (
               <div className="group-name-field">
                 <input
-                  className="text-input"
+                  ref={nameInputRef}
+                  className={`text-input${nameMissing ? ' input-error' : ''}`}
                   type="text"
                   value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
+                  onChange={(e) => {
+                    setGroupName(e.target.value)
+                    setNameMissing(false)
+                  }}
                   placeholder="Group name"
                   aria-label="Group name"
+                  aria-invalid={nameMissing || undefined}
                 />
               </div>
             )}
@@ -157,7 +171,8 @@ function NewChatScreen() {
         <button
           type="button"
           className="btn btn-primary btn-block"
-          disabled={!canCreate}
+          disabled={selectedIds.length === 0}
+          aria-disabled={!canCreate}
           onClick={create}
         >
           {isGroup ? 'Create group chat' : 'Start chat'}

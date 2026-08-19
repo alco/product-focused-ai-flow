@@ -26,6 +26,7 @@
   /* Brand accents */
   --primary: #12876c;           /* teal-green: accent text, eyebrows, active */
   --accent-blue: #3b82f6;       /* interactive hover / info actions */
+  --error: #dc2626;             /* red-600: validation errors, destructive */
 
   /* Lime ramp: energy, action, success, highlight (never white text on lime) */
   --lime-50: #f7fee7;
@@ -129,8 +130,18 @@ a:hover { text-decoration: underline; }
   text-decoration: none;
   transition: all .2s ease-in-out;
 }
+/* Not-actionable state. `aria-disabled` gets the same look as `disabled`
+   but keeps receiving clicks, so the UI can react (e.g. point at the field
+   that's blocking the action) instead of silently swallowing them. */
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
 .btn-primary { background-color: var(--sona-dark); color: #fff; }
 .btn-primary:hover { background-color: var(--accent-blue); }
+.btn-primary:disabled:hover,
+.btn-primary[aria-disabled='true']:hover { background-color: var(--sona-dark); }
 .btn-secondary { background-color: transparent; border-color: var(--sona-dark); color: var(--sona-dark); }
 .btn-secondary:hover { background-color: var(--muted); }
 .btn-lime { background-color: var(--lime-200); color: var(--foreground); }

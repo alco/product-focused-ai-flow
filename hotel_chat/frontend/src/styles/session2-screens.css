@@ -255,6 +255,11 @@
   width: 100%;
 }
 
+.text-input.input-error {
+  border-color: var(--error);
+  outline: none;
+}
+
 .check-circle {
   align-items: center;
   border: 1.5px solid var(--border);

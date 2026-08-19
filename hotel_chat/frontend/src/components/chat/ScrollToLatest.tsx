@@ -12,12 +12,21 @@ import { useLayoutEffect, useRef } from 'react'
 // message bubble's height on top of any small scroll drift.
 const FOLLOW_THRESHOLD = 240
 
-function scrollParent(el: HTMLElement): HTMLElement | null {
+// The element that actually scrolls the transcript. On desktop that's the
+// overflowing .convo-scroll; on mobile .phone-scroll has overflow-y: auto
+// but never overflows (.phone is min-height-sized, so the *document*
+// scrolls and the composer is sticky) — an ancestor only counts if it
+// really overflows, otherwise fall back to the document's scroller.
+// Scrolling that one to its full height lands past the sticky composer's
+// flow position, so the last bubble is never hidden behind it.
+function findScroller(el: HTMLElement): HTMLElement {
   for (let p = el.parentElement; p; p = p.parentElement) {
     const { overflowY } = getComputedStyle(p)
-    if (overflowY === 'auto' || overflowY === 'scroll') return p
+    if ((overflowY === 'auto' || overflowY === 'scroll') && p.scrollHeight > p.clientHeight) {
+      return p
+    }
   }
-  return null
+  return document.scrollingElement as HTMLElement
 }
 
 export function ScrollToLatest({ count }: { count: number }) {
@@ -27,8 +36,7 @@ export function ScrollToLatest({ count }: { count: number }) {
   useLayoutEffect(() => {
     const el = ref.current
     if (!el || count === 0) return
-    const scroller = scrollParent(el)
-    if (!scroller) return
+    const scroller = findScroller(el)
 
     if (!hadContent.current) {
       // First render with messages (collection may fill in after mount).
@@ -39,9 +47,30 @@ export function ScrollToLatest({ count }: { count: number }) {
 
     const distance = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
     if (distance < FOLLOW_THRESHOLD) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
     }
   }, [count])
+
+  // Content height also changes without the message count changing — webfont
+  // metrics settling, reaction chips syncing in — which leaves the initial
+  // jump landing short. Re-pin to the bottom on any such growth, under the
+  // same near-bottom guard so a reader scrolled up into history is never
+  // pulled down.
+  useLayoutEffect(() => {
+    const el = ref.current
+    const content = el?.parentElement
+    if (!el || !content) return
+    const observer = new ResizeObserver(() => {
+      if (!hadContent.current) return
+      const scroller = findScroller(el)
+      const distance = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight
+      if (distance > 0 && distance < FOLLOW_THRESHOLD) {
+        scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
+      }
+    })
+    observer.observe(content)
+    return () => observer.disconnect()
+  }, [])
 
   return <div ref={ref} aria-hidden />
 }

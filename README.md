@@ -48,29 +48,29 @@ AI briefs and artifacts, in chronological order:
 
 | File                                                                | What it is                                                                                         |
 | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `../1-kickoff-brainstorming-ai-brief.md`                            | The original brief: goals, scope boundaries, session format                                        |
-| `agent_sessions/session-1-log.md`                                   | Session 1 round-by-round decision log (scope + feature set)                                        |
-| `agent_sessions/session-1-summary.md`                               | Session 1 summary: premise, decisions/forks, vision + conceptual architecture                      |
-| `agent_sessions/session-2-prep.md`                                  | Agenda and inputs for session 2 (UI mockups)                                                       |
-| `../2-ui-mockup-ai-brief.md`                                        | Brief for session 2: mockup goals + the frontend stack                                             |
-| `agent_artifacts/brand-guidelines.md`                               | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns                     |
-| `agent_sessions/session-2-log.md`                                   | Session 2 log: frontend scaffold decisions, parallel mockup build, review findings                 |
-| `agent_sessions/session-2-summary.md`                               | Session 2 summary: premise, decisions/forks, state of the frontend + architecture                  |
-| `../3-backend-arch-ai-brief.md`                                     | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
-| `agent_sessions/session-3-summary.md`                               | Session 3 summary: backend scaffold decisions/forks, verified state, open items                    |
-| `agent_artifacts/data-model.md`                                     | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review)                            |
-| `agent_artifacts/shape-model.md`                                    | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review)           |
-| `agent_sessions/session-4-navigation-wiring-implementation-plan.md` | Session 4 implementation plan: responsive routing architecture, task-by-task build                 |
-| `agent_sessions/session-4-log.md`                                   | Session 4 log: parallel-worktree execution, merge, integration verification                        |
-| `agent_sessions/session-4-summary.md`                               | Session 4 summary: premise, decisions/forks, navigation architecture as built                      |
-| `../5-tanstack-db-collections-with-mock-data-ai-brief.md`           | Brief for session 5: TanStack DB QueryCollections over hard-coded data                             |
-| `agent_sessions/session-5-summary.md`                               | Session 5 summary: collections ↔ shape catalog mapping, derived-display refactor                   |
-| `../6-backend-data-model-ai-brief.md`                               | Brief for session 6: Ecto migrations + seed data, then swap mocks for live shapes                  |
-| `agent_sessions/session-6-summary.md`                               | Session 6 summary: migrations/schemas/seeds, all 10 shapes implemented, wired to Electric          |
-| `../7-feature-buildout.md`                                          | Brief for session 7: messaging write endpoints + optimistic mutations, desktop/mobile UI fixes     |
-| `agent_sessions/session-7-summary.md`                               | Session 7 summary: parallel-worktree build of the write path + UI fixes, merge, e2e verification   |
-| `../8-ui-and-backend-cleanups-ai-brief.md`                          | Retroactive brief for session 8: DB-enforced DM pair (dm_key removed), group-create affordance fix |
-| `agent_sessions/session-8-summary.md`                               | Session 8 summary: interactive cleanups, ?as= session switch, scroll-to-bottom, demo readiness     |
+| `1-kickoff-brainstorming-ai-brief.md`                                  | The original brief: goals, scope boundaries, session format                                        |
+| `hotel_chat/agent_sessions/session-1-log.md`                           | Session 1 round-by-round decision log (scope + feature set)                                        |
+| `hotel_chat/agent_sessions/session-1-summary.md`                       | Session 1 summary: premise, decisions/forks, vision + conceptual architecture                      |
+| `hotel_chat/agent_sessions/session-2-prep.md`                          | Agenda and inputs for session 2 (UI mockups)                                                       |
+| `2-ui-mockup-ai-brief.md`                                              | Brief for session 2: mockup goals + the frontend stack                                             |
+| `hotel_chat/agent_artifacts/brand-guidelines.md`                       | Sona brand identity distilled from www.sona.ai: fonts, colors, layout patterns                     |
+| `hotel_chat/agent_sessions/session-2-log.md`                           | Session 2 log: frontend scaffold decisions, parallel mockup build, review findings                 |
+| `hotel_chat/agent_sessions/session-2-summary.md`                       | Session 2 summary: premise, decisions/forks, state of the frontend + architecture                  |
+| `3-backend-arch-ai-brief.md`                                           | Brief for session 3: the backend stack (Phoenix, embedded Electric sync, Postgres, docker compose) |
+| `hotel_chat/agent_sessions/session-3-summary.md`                       | Session 3 summary: backend scaffold decisions/forks, verified state, open items                    |
+| `hotel_chat/agent_artifacts/data-model.md`                             | Brief-3 Phase 2: DB tables, columns, keys and indexes (awaiting review)                            |
+| `hotel_chat/agent_artifacts/shape-model.md`                            | Brief-3 Phase 2: Electric shape catalog per screen + index cross-check (awaiting review)           |
+| `4-navigation-wiring-implementation-plan.md`                           | Session 4 implementation plan: responsive routing architecture, task-by-task build                 |
+| `hotel_chat/agent_sessions/session-4-log.md`                           | Session 4 log: parallel-worktree execution, merge, integration verification                        |
+| `hotel_chat/agent_sessions/session-4-summary.md`                       | Session 4 summary: premise, decisions/forks, navigation architecture as built                      |
+| `5-tanstack-db-collections-with-mock-data-ai-brief.md`                 | Brief for session 5: TanStack DB QueryCollections over hard-coded data                             |
+| `hotel_chat/agent_sessions/session-5-summary.md`                       | Session 5 summary: collections ↔ shape catalog mapping, derived-display refactor                   |
+| `6-backend-data-model-ai-brief.md`                                     | Brief for session 6: Ecto migrations + seed data, then swap mocks for live shapes                  |
+| `hotel_chat/agent_sessions/session-6-summary.md`                       | Session 6 summary: migrations/schemas/seeds, all 10 shapes implemented, wired to Electric          |
+| `7-feature-buildout.md`                                                | Brief for session 7: messaging write endpoints + optimistic mutations, desktop/mobile UI fixes     |
+| `hotel_chat/agent_sessions/session-7-summary.md`                       | Session 7 summary: parallel-worktree build of the write path + UI fixes, merge, e2e verification   |
+| `8-ui-and-backend-cleanups-ai-brief.md`                                | Retroactive brief for session 8: DB-enforced DM pair (dm_key removed), group-create affordance fix |
+| `hotel_chat/agent_sessions/session-8-summary.md`                       | Session 8 summary: interactive cleanups, ?as= session switch, scroll-to-bottom, demo readiness     |
 
 **Roadmap:**
 

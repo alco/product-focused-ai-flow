@@ -22,7 +22,7 @@ Project outline:
 
 | Path                   | What it is                                                                                                                                                                                                           |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `frontend/`            | The frontend app (Vite + React + TanStack Router/DB) — every screen renders from TanStack DB collections synced live from Postgres via Electric shapes, `pnpm dev` and open `/` for the screen index                 |
+| `frontend/`            | The frontend app (Vite + React + TanStack Router/DB) — every screen renders from TanStack DB collections synced live from Postgres via Electric shapes, `pnpm dev` and open `/` (lands on the chat app)                 |
 | `backend/`             | The Phoenix backend: custom API under `/api`, auth proxy for the Electric sync service under `/api/sync/:shape`, SPA serving with catch-all; `mix setup && mix phx.server` for dev                                   |
 | `docker-compose.yml`   | Dev-only Postgres + Electric; `docker compose up -d`, see `README.md`                                                                                                                                                 |
 | `run.sh`               | Dev runner: frontend + backend + a local Caddy HTTP/2 terminator together, Ctrl-C stops all three; see `README.md`                                                                                                    |

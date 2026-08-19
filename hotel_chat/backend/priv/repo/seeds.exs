@@ -157,8 +157,7 @@ dm_conversations =
 
 conversations = group_conversations ++ dm_conversations
 
-Repo.insert_all(
-  Conversation,
+conversation_rows =
   Enum.map(conversations, fn c ->
     %{
       id: conversation_id.(c.slug),
@@ -174,10 +173,7 @@ Repo.insert_all(
       inserted_at: at.(45, "09:00"),
       updated_at: at.(45, "09:00")
     }
-  end),
-  on_conflict: :nothing,
-  conflict_target: [:id]
-)
+  end)
 
 # --- Conversation members (rosters + my per-chat state) ---------------------------
 
@@ -252,10 +248,23 @@ conversation_member_rows =
     Map.merge(base, overrides)
   end
 
-Repo.insert_all(ConversationMember, conversation_member_rows,
-  on_conflict: :nothing,
-  conflict_target: [:id]
-)
+# The dm-pair composite FKs on conversations reference conversation_members
+# and are DEFERRABLE INITIALLY DEFERRED — checked at COMMIT. Each insert_all
+# commits its own implicit transaction, so on a fresh database the DM rows
+# would fail the check before their membership rows exist: both inserts must
+# share one transaction, mirroring the app's write path.
+{:ok, _} =
+  Repo.transaction(fn ->
+    Repo.insert_all(Conversation, conversation_rows,
+      on_conflict: :nothing,
+      conflict_target: [:id]
+    )
+
+    Repo.insert_all(ConversationMember, conversation_member_rows,
+      on_conflict: :nothing,
+      conflict_target: [:id]
+    )
+  end)
 
 # --- Messages ----------------------------------------------------------------
 

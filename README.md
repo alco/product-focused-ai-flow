@@ -69,7 +69,7 @@ AI briefs and artifacts, in chronological order:
 - [x] Data model implementation: migrations + seed data for all 13 tables (Create/Update write API + unit tests still pending)
 - [x] Frontend↔backend wiring: TanStack DB collections swapped from fixtures to live Electric shapes on `/api/sync/*`
 - [x] Feature build-out, messaging: write API (message/reply/reaction/announcement/new-conversation/mark-read) + TanStack optimistic mutations with txid tracking; desktop/mobile UI fixes
-- [ ] Feature build-out, remaining: notifications, onboarding/offboarding
+- [x] Feature build-out, remaining: notifications, onboarding/offboarding
 - [ ] Auth on the `/api` pipeline (retire `HotelChat.Sync.MockSession` and the temporary `?can_post_announcements` flag)
 - [ ] Production hardening: release migrations, Electric storage volume, media retention strategy
 - [ ] Pilot deployment

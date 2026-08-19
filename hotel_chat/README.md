@@ -2,6 +2,13 @@
 
 See the root [README](../README.md) for what this app is and the AI-brief/session history behind it. This doc is the practical "how do I run it" reference.
 
+## Requirements
+
+* Docker, Compose
+* Elixir, Erlang/OTP
+* Node
+* Caddy
+
 ## Dev workflow
 
 Before the first run, bring up the Postgres database by running docker compose and set up the DB schema+seeds in backend/:

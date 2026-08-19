@@ -55,6 +55,7 @@ AI briefs and artifacts, in chronological order:
 | `../7-feature-buildout.md`                                          | Brief for session 7: messaging write endpoints + optimistic mutations, desktop/mobile UI fixes     |
 | `agent_sessions/session-7-summary.md`                               | Session 7 summary: parallel-worktree build of the write path + UI fixes, merge, e2e verification   |
 | `../8-ui-and-backend-cleanups-ai-brief.md`                          | Retroactive brief for session 8: DB-enforced DM pair (dm_key removed), group-create affordance fix |
+| `agent_sessions/session-8-summary.md`                               | Session 8 summary: interactive cleanups, ?as= session switch, scroll-to-bottom, demo readiness     |
 
 **Roadmap:**
 
